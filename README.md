@@ -10,8 +10,11 @@ The repository has been forked from [camsaul/nesasm](https://github.com/camsaul/
 * The Program Counter (`*`) is now a symbol instead of a value. It may be used as an operand in the `BANK` and `PAGE` functions. `BANK(*)` returns the current bank of the assembler.
 * `PAGE` now allows values in addition to symbols. E.g. `PAGE($C000) ; -> 6`
 
+More to be added!
+
 #### Further Reading and Links
 
 * [`usage.txt`](https://raw.githubusercontent.com/scrimpeh/nesasm/master/usage.txt)
 * [Bunnyboy's source](http://www.nespowerpak.com/nesasm/)
 * [Original MagicKit assembler](http://www.magicengine.com/mkit/)
+* [camsaul/nesasm Readme](https://github.com/camsaul/nesasm) (Contains lots of useful links!)
