@@ -258,6 +258,10 @@ main(int argc, char **argv)
 	lablset("_nb_bank", 1);
 	lablset("_call_bank", 0);
 
+	lablset("*", 0); /* PC */
+	pc_ptr = lablptr;
+	pc_ptr->type = PC;
+
 	/* init global variables */
 	max_zp = 0x01;
 	max_bss = 0x0201;
@@ -333,6 +337,11 @@ main(int argc, char **argv)
 		section_bank[S_DATA]         = 0x00;
 		bank_page[S_DATA][0x00]      = 0x07;
 		bank_loccnt[S_DATA][0x00]    = 0x0000;
+
+		/* reset PC pointer */
+		pc_ptr->bank = section_bank[section];
+		pc_ptr->page = bank_page[section][pc_ptr->bank];
+		pc_ptr->value = bank_loccnt[section][pc_ptr->bank];
 
 		/* pass message */
 		printf("pass %i\n", pass + 1);

@@ -100,12 +100,13 @@
 #define P_CALL		49	// .call
 
 /* symbol flags */
-#define MDEF	3	/* multiply defined */
 #define UNDEF	1	/* undefined - may be zero page */
 #define IFUNDEF	2	/* declared in a .if expression */
+#define MDEF	3	/* multiply defined */
 #define DEFABS	4	/* defined - two byte address */
 #define MACRO	5	/* used for a macro name */
 #define FUNC	6	/* used for a function */
+#define PC      7	/* special symbol for the PC */
 
 /* operation code flags */
 #define PSEUDO		0x0008000

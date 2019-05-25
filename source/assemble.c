@@ -228,6 +228,11 @@ assemble(void)
 		/* reset last label pointer */
 		lastlabl = NULL;
 	}
+	
+	/* reassign pc  */
+	pc_ptr->bank = bank;
+	pc_ptr->value = page << 13 | loccnt;
+	pc_ptr->page = page;
 }
 
 

@@ -27,6 +27,7 @@ struct t_symbol  *lablptr;	/* label pointer into symbol table */
 struct t_symbol  *glablptr;	/* pointer to the latest defined global label */
 struct t_symbol  *lastlabl;	/* last label we have seen */
 struct t_symbol  *bank_glabl[4][256];	/* latest global symbol for each bank */
+struct t_symbol  *pc_ptr;	/* pointer to PC */
 char hex[5];			/* hexadecimal character buffer */
 void (*opproc)(int *);	/* instruction gen proc */
 int  opflg;		/* instruction flags */

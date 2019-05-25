@@ -379,14 +379,6 @@ push_val(int type)
 	c = *expr;
 
 	switch (type) {
-	/* program counter */
-	case T_PC:
-		if (data_loccnt == -1)
-			val = (loccnt + (page << 13));
-		else
-			val = (data_loccnt + (page << 13));
-		expr++;
-		break;
 
 	/* char ascii value */
 	case T_CHAR:
@@ -399,7 +391,8 @@ push_val(int type)
 		expr++;
 		break;
 
-	/* symbol */
+	/* symbol or pc */
+	case T_PC:
 	case T_SYMBOL:
 		/* extract it */
 		if (!getsym())
@@ -522,6 +515,13 @@ getsym(void)
 
 	valid = 1;
 	i = 0;
+
+	/* special case for the PC */
+	if (*expr == '*') {
+		symbol[1] = *expr++;
+		i = 1;
+		valid = 0;
+	}
 
 	/* get the symbol, stop to the first 'non symbol' char */
 	while (valid) {
