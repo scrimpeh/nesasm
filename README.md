@@ -1,37 +1,17 @@
-The O.G. NESasm assembler for NES 6502 assembly, version 3.1 (Latest as of March 2016). Includes `Makefile` for OS X / Linux / other Unix-like OSes.
+### NESASM-S (Working Title)
 
-###### Usage
+This is a fork of NESASM 3.1, intended to provide useful features to the assembler while maintaining maximum compatibility to existing NESASM projects. This fork is intended to serve as a simple drop-in replacement to the existing assembler.
 
-```bash
-cd source && make && sudo make install
-```
+Note that while the PCE-Engine assembler is still included in the source, it is untested and not updated. Compile and use PCEAS at your own risk.
 
-Then run the assembler with `nesasm`.
+The repository has been forked from [camsaul/nesasm](https://github.com/camsaul/nesasm). I've added a CMake build for platform-independent building. See the original repository for further details, resources and credits.
 
-See [`usage.txt`](https://raw.githubusercontent.com/camsaul/nesasm/master/usage.txt) for more details.
+##### Changes to NESASM 3.1
+* The Program Counter (`*`) is now a symbol instead of a value. It may be used as an operand in the `BANK` and `PAGE` functions. `BANK(*)` returns the current bank of the assembler.
+* `PAGE` now allows values in addition to symbols. E.g. `PAGE($C000) ; -> 6`
 
+##### Further Reading and Links
 
-###### Credits
-
-Original source, by [bunnyboy](http://nintendoage.com/index.cfm?FuseAction=Users.Home&User=bunnyboy), is [available here](http://www.nespowerpak.com/nesasm/).
-The only modifications I (@camsaul) made were inclusion of the `Makefile`, which was adapted from the one included with [MagicKit](http://www.magicengine.com/mkit/), and the text files,
-which were found in various places in the aforementioned sites and by lots of research/searching on my part.
-
-
-###### Resources
-
-Here are various resources that I've found useful in my quest to master NES homebrew game development:
-
-*  [NerdyNights NES Programming Tutorials](http://nintendoage.com/auth/forum/messageview.cfm?catid=22&threadid=7155)
-*  [nesdev.com](http://nesdev.com/)
-*  [Beagle Bros. 6502 Cheatsheet](https://raw.githubusercontent.com/camsaul/nesasm/master/beagle_bros_6502_reference.png)
-*  [Programming the 65816 (PDF of book available for free)](http://archive.6502.org/datasheets/wdc_65816_programming_manual.pdf)
-*  [NES Technical Documentation by YOSHi](https://raw.githubusercontent.com/camsaul/nesasm/master/nes_technical_documentation.txt)
-*  [I Am Error: Platform Studies (book)](http://amzn.to/1RF1VBJ)
-*  [FCEUX - Emulator w/ Debugging Capabilities](http://www.fceux.com/web/home.html)
-*  [Tile Layer PRO - CHR Editor (Windows)](http://www.romhacking.net/utilities/108/)
-*  [NES CHR Editor (Mac OS X)](http://www.ninjasftw.com:8080/squirrel/nes_chr/)
-*  [Hacking the Legend of Zelda (video)](https://www.youtube.com/watch?v=FolqIgQRtl0)
-*  [NES Scrolling Tutorial (video)](https://vimeo.com/9578423)
-*  [Programming the 6502 (video)](https://www.youtube.com/watch?v=pASatutl2Ik)
-*  [Programming the Nintendo Entertainment System (video)](https://www.youtube.com/watch?v=XT95C4fT6zA)
+* [`usage.txt`](https://raw.githubusercontent.com/scrimpeh/nesasm/master/usage.txt)
+* [Bunnyboy's source](http://www.nespowerpak.com/nesasm/)
+* [Original MagicKit assembler](www.magicengine.com/mkit/)
