@@ -35,6 +35,8 @@
 #define STANDARD_CD	1
 #define SUPER_CD	2
 
+#define ASM_VER 2
+
 /* variables */
 unsigned char ipl_buffer[4096];
 char   in_fname[128];	/* file names, input */
@@ -58,7 +60,6 @@ int   mlist_opt;	/* macro listing main flag */
 int   xlist;		/* listing file main flag */
 int   list_level;	/* output level */
 int   asm_opt[8];	/* assembler options */
-
 
 /* ----
  * main()
@@ -109,6 +110,10 @@ main(int argc, char **argv)
 
 	/* display assembler version message */
     printf("%s\n\n", machine->asm_title);
+	printf("This is an unofficial modification to the MagicKit assembler. Check included readme for details.\nVersion (%s)\n\n", "v0.1");
+	if (machine->type != MACHINE_NES) {
+		printf("Warning: Extensions are developed for the NES and untested on other platforms. Use at your own risk!\n\n");
+	}
 
 	/* parse command line */
 	if (argc > 1) {
@@ -245,7 +250,7 @@ main(int argc, char **argv)
 	addinst(machine->pseudo_inst);
 
 	/* predefined symbols */
-	lablset("MAGICKIT", 1);
+	lablset("MAGICKIT", ASM_VER);
 	lablset("DEVELO", develo_opt | mx_opt);
 	lablset("CDROM", cd_opt | scd_opt);
 	lablset("_bss_end", 0);
@@ -354,7 +359,7 @@ main(int argc, char **argv)
 		if (pass == FIRST_PASS)
 			proc_reloc();
 
-		/* abord pass on errors */
+		/* abort pass on errors */
 		if (errcnt) {
 			printf("# %d error(s)\n", errcnt);
 			break;
@@ -488,7 +493,7 @@ main(int argc, char **argv)
 	}
 
 	/* close listing file */
-	if (xlist && list_level)
+	if (xlist && list_level && lst_fp)
 		fclose(lst_fp);
 
 	/* close input file */

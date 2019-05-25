@@ -139,8 +139,8 @@ struct t_opcode pce_pseudo[23] = {
 /* PCE machine description */
 struct t_machine pce = {
 	MACHINE_PCE,   /* type */
-	"PCEAS", /* asm_name */
-	"PC-Engine Assembler (v2.51)", /* asm_title */
+	"PCEAS-S", /* asm_name */
+	"Extended PC-Engine Assembler (v2.51)", /* asm_title */
 	".pce",  /* rom_ext */
 	"PCE_INCLUDE", /* include_env */
 	0xD8,    /* zp_limit */
