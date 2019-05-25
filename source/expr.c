@@ -673,9 +673,19 @@ do_op(void)
 
 	/* PAGE */
 	case OP_PAGE:
-		if (!check_func_args("PAGE"))
+		if (expr_lablcnt > 1) {
+			error("Too many symbols in function PAGE!");
 			return (0);
-		val[0] = expr_lablptr->page;
+		}
+		else if (expr_lablcnt == 1) {
+			/* if a label has been supplied, get its page */
+			val[0] = expr_lablptr->page;
+		}
+		else {
+			/* otherwise shift the value right by 13 */
+			val[0] >>= 13;
+		}
+
 		break;
 
 	/* VRAM */
