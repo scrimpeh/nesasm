@@ -5,6 +5,7 @@
 #include "defs.h"
 #include "externs.h"
 #include "protos.h"
+#include "util/strcasecmp.h"
 
 int  mopt;
 int  in_macro;

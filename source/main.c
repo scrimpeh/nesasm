@@ -22,7 +22,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
 #include <string.h>
 #include <ctype.h>
 #include "defs.h"
@@ -30,6 +29,7 @@
 #include "protos.h"
 #include "vars.h"
 #include "inst.h"
+#include "util/strcasecmp.h"
 
 /* defines */
 #define STANDARD_CD	1

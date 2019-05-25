@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <strings.h>
 #include <string.h>
 #include <ctype.h>
 #include "defs.h"
 #include "externs.h"
 #include "protos.h"
 #include "expr.h"
+#include "util/strcasecmp.h"
 
 /* ----
  * evaluate()

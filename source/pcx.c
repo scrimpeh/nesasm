@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
 #include <string.h>
 #include <ctype.h>
 #include "defs.h"
 #include "externs.h"
 #include "protos.h"
+#include "util/strcasecmp.h"
 
 /* globals */
 char pcx_name[128];		/* pcx file name */
