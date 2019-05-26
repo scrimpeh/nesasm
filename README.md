@@ -9,6 +9,7 @@ The repository has been forked from [camsaul/nesasm](https://github.com/camsaul/
 #### Changes to NESASM 3.1
 * The Program Counter (`*`) is now a symbol instead of a value. It may be used as an operand in the `BANK` and `PAGE` functions. `BANK(*)` returns the current bank of the assembler.
 * `PAGE` now allows values in addition to symbols. E.g. `PAGE($C000) ; -> 6`
+* Functions can use the macro-like parameters `\?n`, `\@` and `\#` to get info about their arguments.
 
 More to be added!
 

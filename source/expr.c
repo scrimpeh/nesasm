@@ -707,8 +707,12 @@ do_op(void)
 			val[0] = expr_lablptr->page;
 		}
 		else {
-			/* otherwise shift the value right by 13 */
+			/* otherwise shift value on the value stack right by 13 */
 			val[0] >>= 13;
+			if (val[0] > 7) {
+				error("Page index out of range!");
+				return (0);
+			}
 		}
 
 		break;

@@ -299,7 +299,7 @@ func_getargs(void)
 			case 'A':
 			case 'X':
 			case 'Y':
-				if (!isalnum(*expr)) {	/* look ahead one*/
+				if (!isalnum(*expr) && *expr != '_') {	/* look ahead one*/
 					arg_type = ARG_REG;
 					break;
 				}
