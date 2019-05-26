@@ -46,6 +46,8 @@ extern struct t_func  *func_ptr;
 extern struct t_proc  *proc_ptr;
 extern int   proc_nb;
 extern char  func_arg[8][10][80];
+extern int   func_argnum[8];
+extern char  func_argbuf[128];
 extern int   func_idx;
 extern int   infile_error;
 extern int   infile_num;

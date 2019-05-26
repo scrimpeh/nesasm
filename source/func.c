@@ -10,6 +10,8 @@ struct t_func *func_tbl[256];
 struct t_func *func_ptr;
 char func_line[128];
 char func_arg[8][10][80];
+int  func_argnum[8];
+char func_argbuf[128];
 int  func_idx;
 
 
@@ -121,6 +123,7 @@ func_extract(int ip)
 	char  c;
 	int   i, arg, max_arg;
 	int   end;
+	int   arg_valid;
 
 	/* skip spaces */
 	while (isspace(prlnbuf[ip]))
@@ -144,16 +147,36 @@ func_extract(int ip)
 
 		/* function arg */
 		case '\\':
+		get_arg_type:
+			arg_valid = 0;
 		   *ptr++ = c;
 		    i++;
 			c = prlnbuf[ip++];
-			if ((c < '1') || (c > '9')) {
+
+			if (c == '#' || c == '@')
+				arg_valid = 1;
+			else if (c >= '1' && c <= '9') {
+				arg_valid = 1;
+				arg = c - '1';
+				if (max_arg < arg)
+					max_arg = arg;
+			}
+			else if (c == '?') {
+				*ptr++ = c;
+				i++;
+				c = prlnbuf[ip++];
+				if (c >= '1' && c <= '9') {
+					arg_valid = 1;
+					arg = c - '1';
+					if (max_arg < arg)
+						max_arg = arg;
+				}
+			}
+
+			if (!arg_valid) {
 				error("Invalid function argument!");
 				return (-1);
 			}
-			arg = c - '1';
-			if (max_arg < arg)
-				max_arg = arg;
 
 		/* other */
 		default:
@@ -177,7 +200,7 @@ int
 func_getargs(void)
 {
 	char c, *ptr, *line;
-	int arg, level, space, flag;
+	int arg, level, space, flag, empty_args, last_arg;
 	int i, x;
 
 	/* can not nest too much macros */
@@ -197,10 +220,15 @@ func_getargs(void)
 	/* initialize args */
     line = NULL;
 	ptr  = func_arg[func_idx][0];
-	arg  = 0;
 
-	for (i = 0; i < 9; i++)
+	for (i = 0; i < 9; i++) 
 		func_arg[func_idx][i][0] = '\0';
+	func_argnum[func_idx] = 0;
+	arg = 0;
+	/* imitate macro behaviour, which coutns empty args
+	   only if they precede non-empty args */
+	empty_args = 0;
+	last_arg = 0;
 
 	/* get args one by one */
 	for (;;) {
@@ -212,6 +240,10 @@ func_getargs(void)
 		switch (c) {
 		/* empty arg */
 		case ',':
+			if (!last_arg)
+				empty_args++;
+			last_arg = 0;
+
 			arg++;
 			ptr = func_arg[func_idx][arg];
 			if (arg == 9) {
@@ -237,6 +269,12 @@ func_getargs(void)
 			flag = 0;
 			i = 0;
 			x = 0;
+
+			func_argnum[func_idx]++;
+			func_argnum[func_idx] += empty_args;
+			last_arg = 1;
+			empty_args = 0;
+
 			for (;;) {
 				if (c == '\0') {
 					if (flag == 0)
