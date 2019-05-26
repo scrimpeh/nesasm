@@ -306,7 +306,7 @@ func_getargs(void)
 			default:	/* label or string */
 				arg_type = (isdigit(c) || c == '$' || c == '%') ? ARG_ABS : ARG_LABEL; break;
 			}
-			sprintf(func_argtypebuf[func_idx], "%1i", arg_type);
+			sprintf(func_argtypebuf[func_idx][arg], "%1i", arg_type);
 
 			for (;;) {
 				if (c == '\0') {

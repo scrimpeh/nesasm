@@ -110,21 +110,32 @@ cont:
 					/* get number of arguments */
 					expr_stack[func_idx++] = expr;
 					expr = func_argnumbuf[func_idx - 2];
-					break;
 				}
-				if (c == '@') {
+				else if (c == '@') {
 					/* get unique number for each function invocation */
 					expr_stack[func_idx++] = expr;
 					expr = func_fcntbuf[func_idx - 2];
-					break;
+				} 
+				else if (c == '?') {
+					c = *expr++;
+					if (c < '1' || c > '9') {
+						error("Invalid function argument index!");
+						return (0);
+					}
+
+					arg = c - '1';
+					expr_stack[func_idx++] = expr;
+					expr = func_argtypebuf[func_idx - 2][arg];
 				}
-				if (c < '1' || c > '9') {
-					error("Invalid function argument index!");
-					return (0);
+				else {
+					if (c < '1' || c > '9') {
+						error("Invalid function argument index!");
+						return (0);
+					}
+					arg = c - '1';
+					expr_stack[func_idx++] = expr;
+					expr = func_arg[func_idx - 2][arg];
 				}
-				arg = c - '1';
-				expr_stack[func_idx++] = expr;
-				expr = func_arg[func_idx - 2][arg];
 				break;
 
 			/* hexa prefix */
