@@ -47,8 +47,12 @@ extern struct t_proc  *proc_ptr;
 extern int   proc_nb;
 extern char  func_arg[8][10][80];
 extern int   func_argnum[8];
-extern char  func_argbuf[128];
+extern char  func_argnumbuf[8][2];
+extern char  func_fcntbuf[8][6];
+extern char  func_argtypebuf[8][10][2];
 extern int   func_idx;
+extern int   fcounter, fcntmax;
+extern int   fcntstack[8];
 extern int   infile_error;
 extern int   infile_num;
 extern FILE	*out_fp;	/* file pointers, output */

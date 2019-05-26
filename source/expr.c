@@ -108,9 +108,14 @@ cont:
 				c = *expr++;
 				if (c == '#') {
 					/* get number of arguments */
-					sprintf(func_argbuf, "%d", func_argnum[func_idx - 1]);
 					expr_stack[func_idx++] = expr;
-					expr = func_argbuf;
+					expr = func_argnumbuf[func_idx - 2];
+					break;
+				}
+				if (c == '@') {
+					/* get unique number for each function invocation */
+					expr_stack[func_idx++] = expr;
+					expr = func_fcntbuf[func_idx - 2];
 					break;
 				}
 				if (c < '1' || c > '9') {
@@ -411,6 +416,8 @@ push_val(int type)
 				return (0);
 
 			expr_stack[func_idx++] = expr;
+			fcntmax++;
+			fcounter = fcntmax;
 			expr = func_ptr->line;
 			return (1);
 		}

@@ -11,8 +11,13 @@ struct t_func *func_ptr;
 char func_line[128];
 char func_arg[8][10][80];
 int  func_argnum[8];
-char func_argbuf[128];
+/* I'm not sure if I need separate buffer space for all of thse, but never hurts to make sure */
+char func_argnumbuf[8][2];
+char func_fcntbuf[8][6];
+char func_argtypebuf[8][10][2];
 int  func_idx;
+int  fcounter, fcntmax;
+int  fcntstack[8];
 
 
 /* ----
@@ -200,7 +205,7 @@ int
 func_getargs(void)
 {
 	char c, *ptr, *line;
-	int arg, level, space, flag, empty_args, last_arg;
+	int arg, level, space, read_cur_func_arg, empty_args, last_arg, arg_valid, arg_type;
 	int i, x;
 
 	/* can not nest too much macros */
@@ -221,11 +226,17 @@ func_getargs(void)
     line = NULL;
 	ptr  = func_arg[func_idx][0];
 
-	for (i = 0; i < 9; i++) 
+	for (i = 0; i < 9; i++) {
 		func_arg[func_idx][i][0] = '\0';
+		sprintf(func_argtypebuf[func_idx][i], "%1i", NO_ARG);
+	}
+	func_fcntbuf[func_idx][0] = '\0';
+	func_argnumbuf[func_idx][0] = '\0';
 	func_argnum[func_idx] = 0;
+
+	fcntstack[func_idx] = fcntmax;
 	arg = 0;
-	/* imitate macro behaviour, which coutns empty args
+	/* imitate macro behaviour, which counts empty args
 	   only if they precede non-empty args */
 	empty_args = 0;
 	last_arg = 0;
@@ -260,27 +271,49 @@ func_getargs(void)
 
 		/* end of function */
 		case ')':
+			sprintf(func_argnumbuf[func_idx], "%1i", func_argnum[func_idx]);
+			sprintf(func_fcntbuf[func_idx], "%05i", fcntstack[func_idx]);
 			return (1);
 
 		/* arg */
 		default:
 			space = 0;
 			level = 0;
-			flag = 0;
+			read_cur_func_arg = 0;
 			i = 0;
 			x = 0;
 
+			/* update arg number */
 			func_argnum[func_idx]++;
 			func_argnum[func_idx] += empty_args;
 			last_arg = 1;
 			empty_args = 0;
 
+			/* try to determine argument type, imitates macro_getargtype(void), even though
+			 only NONE, ABSOLUTE or LABEL really make sense here*/
+			arg_type = NO_ARG;
+			switch (toupper(c)) {
+			case '[': arg_type = ARG_INDIRECT; break;
+			case '#': arg_type = ARG_IMM;      break;
+			case '"': arg_type = ARG_STRING;   break;
+			case 'A':
+			case 'X':
+			case 'Y':
+				if (!isalnum(*expr)) {	/* look ahead one*/
+					arg_type = ARG_REG;
+					break;
+				}
+			default:	/* label or string */
+				arg_type = (isdigit(c) || c == '$' || c == '%') ? ARG_ABS : ARG_LABEL; break;
+			}
+			sprintf(func_argtypebuf[func_idx], "%1i", arg_type);
+
 			for (;;) {
 				if (c == '\0') {
-					if (flag == 0)
+					if (!read_cur_func_arg)
 						break;
 					else {
-						flag = 0;
+						read_cur_func_arg = 0;
 						c = *expr++;
 						continue;
 					}
@@ -293,18 +326,37 @@ func_getargs(void)
 						break;
 				}
 				else if (c == '\\') {
+					/* read an argument from the current function */
 					if (func_idx == 0) {
 						error("Syntax error!");
 						return (0);
 					}
 					c = *expr++;
-					if (c < '1' || c > '9') {
-						error("Invalid function argument index!");
+					arg_valid = 0;
+					if (c == '#' || c == '@') {
+						arg_valid = 1;
+						line = c == '#' ? func_argnumbuf[func_idx - 1] : func_fcntbuf[func_idx - 1];
+					}
+					else if (c >= '1' && c <= '9') {
+						arg_valid = 1;
+						line = func_arg[func_idx - 1][c - '1'];
+					}
+					else if (c == '?') {
+						c = *expr++;
+						if (c >= '1' && c <= '9') {
+							line = func_argtypebuf[func_idx - 1][c - '1'];
+							arg_valid = 1;
+						}
+					}
+					if (arg_valid) {
+						read_cur_func_arg = 1;
+						c = *line++;
+					}
+					else {
+						error("Invalid function argument!");
 						return (0);
 					}
-					line = func_arg[func_idx - 1][c - '1'];
-					flag = 1;
-					c = *line++;
+
 					continue;
 				}
 				else if (c == '(') {
@@ -334,7 +386,7 @@ func_getargs(void)
 					return (0);
 				}
 				x++;
-				if (flag)
+				if (read_cur_func_arg)
 					c = *line++;
 				else
 					c = *expr++;

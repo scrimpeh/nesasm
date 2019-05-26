@@ -291,8 +291,8 @@ main(int argc, char **argv)
 		bank = 0;
 		loccnt = 0;
 		slnum = 0;
-		mcounter = 0;
-		mcntmax = 0;
+		mcounter = mcntmax = 0;
+		fcounter = fcntmax = 0;
 		xlist = 0;
 		glablptr = NULL;
 		skip_lines = 0;
