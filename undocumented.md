@@ -13,12 +13,12 @@ This list is not complete. I'll add other stuff as I find it.
 People should know this already, but if they don't, here it is.
 
 * `*` returns the current location of the PC.
-* `lda <value` forces zero page addressing.
+* `lda <value` uses zero page addressing instead of absolute addressing.
 
 #### Addressing Modes
 
 * Indexed post-increment: `lda value,x++`, `lda value,y++`. Expands to `lda value` followed by `inx` or `iny` respectively. Why there's no post-decrement or pre-increment/decrement functions, I don't know.
-* Tagged indirect addressing. `lda [ptr].offset`. Expands to `ldy #offset` followed by `lda [ptr,y]`. 
+* Tagged indirect addressing. `lda [ptr].offset`. Expands to `ldy #offset` followed by `lda [ptr],y`. 
 * Low and high addressing. `lda.L value` and `lda.H value`. Expand to `lda value` and `lda value+1` respectively.
 
 #### Operators
