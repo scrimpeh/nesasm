@@ -49,3 +49,4 @@ People should know this already, but if they don't, here it is.
 
 * `*` as the first character of the line turns the line into a comment
 * Macro arguments can be enclosed in braces (`{...}`). Allows giving an argument containing a comma (`,`) without having it count as two arguments. Note that NESASM automatically turns indexed arguments (`value, x`) into a single argument instead of two, even without braces.
+* Inbuilt functions such as `HIGH` and `LOW` are case-insensitive, unlike regular functions.
