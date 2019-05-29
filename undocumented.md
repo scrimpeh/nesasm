@@ -35,6 +35,7 @@ People should know this already, but if they don't, here it is.
 	* `w` - Enables assembler warnings. The only warnings implemented are bank overruns with included binaries.
 	* `o` - Optimize. Doesn't do anything.
 * `.proc`, `.endp`, `.procgroup`, `.endprocgroup`-  I still don't know how they are intended to be used. Ignore them.
+* `.bank` can take an optional string parameter as name, i.e. `.bank 2, "Graphics"`. This name is not functional in any way I can tell, but it is displayed in the segment usage output. 
 
 
 #### Reserved Symbols
