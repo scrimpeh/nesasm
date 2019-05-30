@@ -329,13 +329,22 @@ macro_install(void)
 	int hash = 0;
 	int i;
 
+	t_inbuilt *ib = iblook(lablptr->name);
+	if (ib) {
+		if (ib->overridable == 0) {
+			error("Symbol already used by a function!");
+			return -1;
+		}
+		ib->overridable = 2;
+	}
+
 	/* mark the macro name as reserved */
 	lablptr->type = MACRO;
 
 	/* check macro name syntax */
 	if (strchr(&symbol[1], '.')) {
 		error("Invalid macro name!");
-		return (0);
+		return 0;
 	}
 
 	/* calculate symbol hash value */
@@ -347,10 +356,9 @@ macro_install(void)
 	hash &= 0xFF;
 
 	/* allocate a macro struct */
-	mptr = (void *)malloc(sizeof(struct t_macro));
-	if (mptr == NULL) {
+	if (!(mptr = malloc(sizeof(t_macro)))) {
 		error("Out of memory!");
-		return (0);
+		return 0;
 	}
 
 	/* initialize it */
@@ -361,7 +369,7 @@ macro_install(void)
 	mlptr = NULL;
 
 	/* ok */
-	return (1);
+	return 1;
 }
 
 /* send back the addressing mode of a macro arg */
