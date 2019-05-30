@@ -589,28 +589,9 @@ int
 check_keyword(void)
 {
 	int op = 0;
-
-	/* check if its an assembler function */
-	if (!strcasecmp(symbol, keyword[0]))
-		op = OP_DEFINED;
-	else if (!strcasecmp(symbol, keyword[1]))
-		op = OP_HIGH;
-	else if (!strcasecmp(symbol, keyword[2]))
-		op = OP_LOW;
-	else if (!strcasecmp(symbol, keyword[3]))
-		op = OP_PAGE;
-	else if (!strcasecmp(symbol, keyword[4]))
-		op = OP_BANK;
-	else if (!strcasecmp(symbol, keyword[7]))
-		op = OP_SIZEOF;
-	else {
-		if (machine->type == MACHINE_PCE) {
-			/* PCE specific functions */
-			if (!strcasecmp(symbol, keyword[5]))
-				op = OP_VRAM;
-			else if (!strcasecmp(symbol, keyword[6]))
-				op = OP_PAL;
-		}
+	struct t_inbuilt* ib = iblook();
+	if (ib && !ib->overridable != 2) {	/* if the inbuilt has not been overridden */
+		op = ib->op_type;
 	}
 
 	/* extra setup for functions that send back symbol infos */
@@ -628,8 +609,7 @@ check_keyword(void)
 		break;
 	}
 
-	/* ok */
-	return (op);
+	return op;
 }
 
 
@@ -768,6 +748,10 @@ do_op(void)
 	case OP_HIGH:
 		val[0] = (val[0] & 0xFF00) >> 8;
 		break;		
+
+	case OP_SQUARE:
+		val[0] = val[0] * val[0];
+		break;
 
 	/* LOW */
 	case OP_LOW:

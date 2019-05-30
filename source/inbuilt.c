@@ -58,8 +58,7 @@ struct t_inbuilt *iblook(void)
 
 void ibregister(char *name, int op, int overridable)
 {
-	int len = strlen(name);
-	int hash = symcasehash();
+	int hash, len = strlen(name);
 	t_inbuilt *ib;
 
 	/* allocate symbol structure */
@@ -73,6 +72,8 @@ void ibregister(char *name, int op, int overridable)
 	strcpy(&ib->name[1], name);
 	ib->overridable = overridable;
 
+	strcpy(symbol, ib->name);
+	hash = symcasehash();
 	ib->next = inbuilt_tbl[hash];
 	inbuilt_tbl[hash] = ib;
 

@@ -72,19 +72,17 @@ colsym(int *ip)
 			break;
 		}
 	}
-	if (check_keyword())
+
+	struct t_inbuilt* ib = iblook();
+	if (ib && ib->overridable == 0)	/* not overridable */
 		err = 1;
 
-	/* error */
 	if (err) {
 		fatal_error("Reserved symbol!");
-//		symbol[0] = 0;
-//		symbol[1] = '\0';
 		return (0);
 	}	
 
-	/* ok */
-	return (i);
+	return i;
 }
 
 
@@ -99,7 +97,7 @@ colsym(int *ip)
 struct t_symbol *stlook(int flag)
 {
 	struct t_symbol *sym;
-	struct t_inbuilt *ib;
+
 	int sym_flag = 0;
 	int hash;
 
@@ -166,12 +164,12 @@ struct t_symbol *stlook(int flag)
  * install symbol into symbol hash table
  */
 
-struct t_symbol *stinstall(int hash, int type)
+t_symbol *stinstall(int hash, int type)
 {
-	struct t_symbol *sym;
+	t_symbol *sym;
 
 	/* allocate symbol structure */
-	if ((sym = (void *)malloc(sizeof(struct t_symbol))) == NULL) {
+	if (!(sym = malloc(sizeof(t_symbol)))) {
 		fatal_error("Out of memory!");
 		return (NULL);
 	}
@@ -218,14 +216,14 @@ struct t_symbol *stinstall(int hash, int type)
  * checking for valid definition, etc.
  */
 
-int
-labldef(int lval, int flag)
+int labldef(int lval, int flag)
 {
 	char c;
+	t_inbuilt *ib;
 
 	/* check for NULL ptr */
-	if (lablptr == NULL)
-		return (0);
+	if (!lablptr)
+		return 0;
 
 	/* adjust symbol address */	
 	if (flag)
@@ -233,7 +231,17 @@ labldef(int lval, int flag)
 
 	/* first pass */
 	if (pass == FIRST_PASS) {
-		/* newly added keywords need a compatibility provision */
+		/* newly added inbuilts need a compatibility shim */
+		if (ib = iblook()) {
+			if (ib->overridable == 0) {
+				error("Symbol already used by a function!");
+				return -1;
+			}
+
+			ib->overridable = 2;
+		}
+
+		/* as do reserved labels */
 		if (lablptr->overridable) {
 			lablptr->overridable = 0;
 			lablptr->type = DEFABS;
@@ -250,21 +258,21 @@ labldef(int lval, int flag)
 				/* already defined - error */
 			case IFUNDEF:
 				error("Can not define this label, declared as undefined in an IF expression!");
-				return (-1);
+				return -1;
 
 			case MACRO:
 				error("Symbol already used by a macro!");
-				return (-1);
+				return -1;
 
 			case FUNC:
 				error("Symbol already used by a function!");
-				return (-1);
+				return -1;
 
 			default:
 				/* reserved label */
 				if (lablptr->reserved) {
 					fatal_error("Reserved symbol!");
-					return (-1);
+					return -1;
 				}
 
 				/* compare the values */
@@ -310,7 +318,7 @@ labldef(int lval, int flag)
 	}
 
 	/* ok */
-	return (0);
+	return 0;
 }
 
 
