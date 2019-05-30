@@ -55,7 +55,6 @@ unsigned int crc_calc(unsigned char *data, int len);
 int  evaluate(int *ip, char flag);
 int  push_val(int type);
 int  getsym(void);
-int  check_keyword(void);
 int  push_op(int op);
 int  do_op(void);
 int  check_func_args(char *func_name);
@@ -69,7 +68,7 @@ int  func_getargs(void);
 
 /* INBUILT.C */
 int symcasehash(const char *buf);
-const t_inbuilt *iblook(const char *buf);
+t_inbuilt *iblook(const char *buf);
 void ibregister(char *name, int op, int overridable);
 
 /* INPUT.C */

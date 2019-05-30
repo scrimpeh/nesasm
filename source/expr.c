@@ -439,35 +439,43 @@ push_val(int type)
 				expr = func_ptr->line;
 				return 1;
 			}
-			else if (op = check_keyword()) {
-				return push_op(op);
+			else {
+				t_inbuilt *ib = iblook(symbol);
+				if (!ib) {
+					error("Unknown function specified!");
+					return 1;
+				}
+				else {
+					if (ib->overridable == 2) {
+						char errbuf[256];
+						sprintf(errbuf, "Function %s has been hidden by another symbol!", &ib->name[1]);
+						error(errbuf);
+						return 1;
+					}
+
+					op = ib->op_type;
+
+					/* extra setup for functions that send back symbol infos */
+					switch (op) {
+					case OP_DEFINED:
+					case OP_HIGH:
+					case OP_LOW:
+					case OP_PAGE:
+					case OP_BANK:
+					case OP_VRAM:
+					case OP_PAL:
+					case OP_SIZEOF:
+						expr_lablptr = NULL;
+						expr_lablcnt = 0;
+						break;
+					}
+
+					return push_op(op);
+				}
 			}
 		}
+
 		/* symbol */
-
-
-
-		/* an user function? */
-		/*if (func_look()) {
-			if (!func_getargs())
-				return (0);
-
-			expr_stack[func_idx++] = expr;
-			fcntmax++;
-			fcounter = fcntmax;
-			expr = func_ptr->line;
-			return (1);
-		}
-
-		/* a predefined function? */
-		/*op = check_keyword();
-		if (op) {
-			if (!push_op(op))
-				return (0);
-			else
-				return (1);
-		}*/
-
 		/* search the symbol */
 		expr_lablptr = stlook(1);
 
@@ -602,39 +610,6 @@ getsym(void)
 	symbol[0] = i;
 	symbol[i+1] = '\0';
 	return i;
-}
-
-
-/* ----
- * check_keyword()
- * ----
- * verify if the current symbol is a reserved function
- */
-
-int check_keyword(void)
-{
-	int op = 0;
-	const t_inbuilt* ib = iblook(symbol);
-	if (ib && ib->overridable != 2) {	/* if the inbuilt has not been overridden */
-		op = ib->op_type;
-	}
-
-	/* extra setup for functions that send back symbol infos */
-	switch (op) {
-	case OP_DEFINED:
-	case OP_HIGH:
-	case OP_LOW:
-	case OP_PAGE:
-	case OP_BANK:
-	case OP_VRAM:
-	case OP_PAL:
-	case OP_SIZEOF:
-		expr_lablptr = NULL;
-		expr_lablcnt = 0;
-		break;
-	}
-
-	return op;
 }
 
 

@@ -73,7 +73,7 @@ colsym(int *ip)
 		}
 	}
 
-	struct t_inbuilt* ib = iblook(symbol);
+	t_inbuilt* ib = iblook(symbol);
 	if (ib && ib->overridable == 0)	/* not overridable */
 		err = 1;
 

@@ -92,6 +92,14 @@ int
 func_install(int ip)
 {
 	int hash;
+	t_inbuilt *ib = iblook(lablptr->name);
+	if (ib) {
+		if (ib->overridable == 0) {
+			error("Symbol already used by a function!");
+			return -1;
+		}
+		ib->overridable = 2;
+	}
 
 	/* mark the function name as reserved */
 	lablptr->type = FUNC;
@@ -130,9 +138,7 @@ func_extract(int ip)
 {
 	char *ptr;
 	char  c;
-	int   i, arg, max_arg;
-	int   end;
-	int   arg_valid;
+	int   i, arg, max_arg, end, arg_valid;
 
 	/* skip spaces */
 	while (isspace(prlnbuf[ip]))
