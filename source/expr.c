@@ -589,8 +589,8 @@ int
 check_keyword(void)
 {
 	int op = 0;
-	struct t_inbuilt* ib = iblook();
-	if (ib && !ib->overridable != 2) {	/* if the inbuilt has not been overridden */
+	struct t_inbuilt* ib = iblook(symbol);
+	if (ib && ib->overridable != 2) {	/* if the inbuilt has not been overridden */
 		op = ib->op_type;
 	}
 

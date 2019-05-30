@@ -12,15 +12,14 @@
  * calculate the case-insensitive hash value of a symbol
  */
 
-int
-symcasehash(void)
+int symcasehash(const char *buf)
 {
 	int i;
 	char c;
 	int hash = 0;
 
-	for (i = 1; i <= symbol[0]; i++) {
-		c = toupper(symbol[i]);
+	for (i = 1; i <= buf[0]; i++) {
+		c = toupper(buf[i]);
 		hash += c;
 		hash = (hash << 3) + (hash >> 5) + c;
 	}
@@ -34,15 +33,15 @@ symcasehash(void)
  * search for an inbuilt in the table
  */
 
-struct t_inbuilt *iblook(void)
+struct t_inbuilt *iblook(const char *buf)
 {
 	/* search symbol */
-	int hash = symcasehash();
+	int hash = symcasehash(buf);
 	struct t_inbuilt* ib;
 
 	ib = inbuilt_tbl[hash];
 	while (ib) {
-		if (!strcasecmp(symbol, ib->name))
+		if (!strcasecmp(buf, ib->name))
 			break;
 		ib = ib->next;
 	}
@@ -72,8 +71,7 @@ void ibregister(char *name, int op, int overridable)
 	strcpy(&ib->name[1], name);
 	ib->overridable = overridable;
 
-	strcpy(symbol, ib->name);
-	hash = symcasehash();
+	hash = symcasehash(ib->name);
 	ib->next = inbuilt_tbl[hash];
 	inbuilt_tbl[hash] = ib;
 

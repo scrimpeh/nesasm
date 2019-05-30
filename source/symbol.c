@@ -73,7 +73,7 @@ colsym(int *ip)
 		}
 	}
 
-	struct t_inbuilt* ib = iblook();
+	struct t_inbuilt* ib = iblook(symbol);
 	if (ib && ib->overridable == 0)	/* not overridable */
 		err = 1;
 
@@ -232,13 +232,13 @@ int labldef(int lval, int flag)
 	/* first pass */
 	if (pass == FIRST_PASS) {
 		/* newly added inbuilts need a compatibility shim */
-		if (ib = iblook()) {
+		
+		if (ib = iblook(lablptr->name)) {
 			if (ib->overridable == 0) {
 				error("Symbol already used by a function!");
 				return -1;
 			}
-
-			ib->overridable = 2;
+			ib->overridable = 2;			
 		}
 
 		/* as do reserved labels */

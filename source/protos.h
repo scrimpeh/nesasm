@@ -68,8 +68,8 @@ int  func_extract(int ip);
 int  func_getargs(void);
 
 /* INBUILT.C */
-int symcasehash(void);
-struct t_inbuilt *iblook(void);
+int symcasehash(const char *buf);
+struct t_inbuilt *iblook(const char *buf);
 void ibregister(char *name, int op, int overridable);
 
 /* INPUT.C */
