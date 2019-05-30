@@ -69,6 +69,7 @@ extern struct t_symbol *glablptr;	/* pointer to the latest defined global symbol
 extern struct t_symbol *lastlabl;	/* last label we have seen */
 extern struct t_symbol *bank_glabl[4][256];	/* latest global label in each bank */
 extern struct t_symbol *pc_ptr;	/* symbol of current PC*/
+extern struct t_inbuilt *inbuilt_tbl[256];	/* hash table for inbuilts */
 extern char hex[];		/* hexadecimal character buffer */
 extern int  stop_pass;	/* stop the program; set by fatal_error() */
 extern int  errcnt;		/* error counter */

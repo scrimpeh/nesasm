@@ -189,6 +189,14 @@ typedef struct t_symbol {
 	char name[SBOLSZ];
 } t_symbol;
 
+/* inbuilt function */
+typedef struct t_inbuilt {
+	struct t_inbuilt *next;
+	int  overridable;	/* 0: not overridable, 1: overridable, 2: overridden */
+	int  op_type;
+	char name[SBOLSZ];
+} t_inbuilt;
+
 typedef struct t_line {
 	struct t_line *next;
 	char *data;

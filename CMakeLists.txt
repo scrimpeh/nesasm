@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}
 	source/expr.h
 	source/externs.h
 	source/func.c
+	source/inbuilt.c
 	source/input.c
 	source/inst.h
 	source/macro.c

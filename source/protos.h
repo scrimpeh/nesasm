@@ -67,6 +67,11 @@ int  func_install(int ip);
 int  func_extract(int ip);
 int  func_getargs(void);
 
+/* INBUILT.C */
+int symcasehash(void);
+struct t_inbuilt *iblook(void);
+void ibregister(char *name, int op, int overridable);
+
 /* INPUT.C */
 void  init_path(void);
 int   readline(void);

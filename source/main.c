@@ -264,6 +264,20 @@ main(int argc, char **argv)
 	hlablset("NESASM_S_VER", 0);
 	hlablset("NESASM_S_REV", 1);
 
+	/* todo: move this somewhere else */
+	ibregister("DEFINED", 21, 0);
+	ibregister("HIGH", 22, 0);
+	ibregister("LOW", 23, 0);
+	ibregister("PAGE", 24, 0);
+	ibregister("BANK", 25, 0);
+	if (machine->type == MACHINE_PCE) {
+		ibregister("VRAM", 26, 0);
+		ibregister("PAL", 27, 0);
+	}
+	ibregister("SIZEOF", 28, 0);
+	/* test inbuilt that can be overriden */
+	ibregister("SQUARE", 29, 1);
+
 	/* init global variables */
 	max_zp = 0x01;
 	max_bss = 0x0201;

@@ -36,6 +36,7 @@
 #define OP_VRAM		26
 #define OP_PAL		27
 #define OP_SIZEOF	28
+#define OP_SQUARE   29
 
 /* operator priority */
 int op_pri[] = {

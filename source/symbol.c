@@ -99,6 +99,7 @@ colsym(int *ip)
 struct t_symbol *stlook(int flag)
 {
 	struct t_symbol *sym;
+	struct t_inbuilt *ib;
 	int sym_flag = 0;
 	int hash;
 
@@ -239,8 +240,6 @@ labldef(int lval, int flag)
 			lablptr->value = lval;
 		}
 		else {
-
-
 			switch (lablptr->type) {
 				/* undefined */
 			case UNDEF:
