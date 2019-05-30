@@ -69,7 +69,7 @@ int  func_getargs(void);
 
 /* INBUILT.C */
 int symcasehash(const char *buf);
-struct t_inbuilt *iblook(const char *buf);
+const t_inbuilt *iblook(const char *buf);
 void ibregister(char *name, int op, int overridable);
 
 /* INPUT.C */

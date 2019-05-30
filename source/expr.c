@@ -396,7 +396,7 @@ push_val(int type)
 {
 	unsigned int mul, val;
 	int op;
-	char c;
+	char c, *la;
 
 	val = 0;
 	c = *expr;
@@ -419,10 +419,36 @@ push_val(int type)
 	case T_SYMBOL:
 		/* extract it */
 		if (!getsym())
-			return (0);
+			return 0;
+
+		/* look-ahead to next character -- if we find parentheses, it must be a function */
+		/* otherwise, it's a symbol */
+
+		la = expr;
+		while (isspace(*la))
+			la++;
+		if (*la == '(') {
+			/* function or inbuilt */
+			if (func_look()) {
+				if (!func_getargs())
+					return 0;
+
+				expr_stack[func_idx++] = expr;
+				fcntmax++;
+				fcounter = fcntmax;
+				expr = func_ptr->line;
+				return 1;
+			}
+			else if (op = check_keyword()) {
+				return push_op(op);
+			}
+		}
+		/* symbol */
+
+
 
 		/* an user function? */
-		if (func_look()) {
+		/*if (func_look()) {
 			if (!func_getargs())
 				return (0);
 
@@ -434,20 +460,20 @@ push_val(int type)
 		}
 
 		/* a predefined function? */
-		op = check_keyword();
+		/*op = check_keyword();
 		if (op) {
 			if (!push_op(op))
 				return (0);
 			else
 				return (1);
-		}
+		}*/
 
 		/* search the symbol */
 		expr_lablptr = stlook(1);
 
 		/* check if undefined, if not get its value */
-		if (expr_lablptr == NULL)
-			return (0);
+		if (!expr_lablptr)
+			return 0;
 		else if (expr_lablptr->type == UNDEF)
 			undef++;
 		else if (expr_lablptr->type == IFUNDEF)
@@ -575,7 +601,7 @@ getsym(void)
 	/* store symbol length */	
 	symbol[0] = i;
 	symbol[i+1] = '\0';
-	return (i);
+	return i;
 }
 
 
@@ -585,11 +611,10 @@ getsym(void)
  * verify if the current symbol is a reserved function
  */
 
-int
-check_keyword(void)
+int check_keyword(void)
 {
 	int op = 0;
-	struct t_inbuilt* ib = iblook(symbol);
+	const t_inbuilt* ib = iblook(symbol);
 	if (ib && ib->overridable != 2) {	/* if the inbuilt has not been overridden */
 		op = ib->op_type;
 	}
@@ -625,17 +650,17 @@ push_op(int op)
 	if (op != OP_OPEN) {
 		while (op_pri[op_stack[op_idx]] >= op_pri[op]) {
 			if (!do_op())
-				return (0);
+				return 0;
 		}
 	}
 	if (op_idx == 63) {
 		error("Expression too complex!");
-		return (0);
+		return 0;
 	}
 	op_idx++;
 	op_stack[op_idx] = op;
 	need_operator = 0;
-	return (1);
+	return 1;
 }
 
 

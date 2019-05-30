@@ -44,6 +44,7 @@ do_func(int *ip)
 			switch (lablptr->type) {
 			case MACRO:
 				fatal_error("Symbol already used by a macro!");
+				return;
 
 			case FUNC:
 				fatal_error("Function already defined!");

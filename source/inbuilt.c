@@ -33,11 +33,11 @@ int symcasehash(const char *buf)
  * search for an inbuilt in the table
  */
 
-struct t_inbuilt *iblook(const char *buf)
+const t_inbuilt *iblook(const char *buf)
 {
 	/* search symbol */
 	int hash = symcasehash(buf);
-	struct t_inbuilt* ib;
+	t_inbuilt* ib;
 
 	ib = inbuilt_tbl[hash];
 	while (ib) {
