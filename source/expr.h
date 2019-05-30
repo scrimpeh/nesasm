@@ -47,7 +47,8 @@ int op_pri[] = {
 	 9 /* NOT   */,  4 /* =     */,  4 /* <>    */,  5 /* <     */,
 	 5 /* <=    */,  5 /* >     */,  5 /* >=    */,
 	10 /* DEFIN.*/, 10 /* HIGH  */, 10 /* LOW   */, 10 /* PAGE  */,
-	10 /* BANK  */, 10 /* VRAM  */, 10 /* PAL   */, 10 /* SIZEOF*/
+	10 /* BANK  */, 10 /* VRAM  */, 10 /* PAL   */, 10 /* SIZEOF*/,
+	10 /* SQUARE*/
 };
 
 unsigned int  op_stack[64] = { OP_START };	/* operator stack */

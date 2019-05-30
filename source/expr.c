@@ -12,9 +12,7 @@
  * ----
  * evaluate an expression
  */
-
-int
-evaluate(int *ip, char last_char)
+int evaluate(int *ip, char last_char)
 {
 	int end, level;
 	int op, type;
@@ -366,7 +364,7 @@ cont:
 	case ',':
 		if (end != 2) {
 			error("Argument missing!");
-			return (0);
+			return 0;
 		}
 		expr++;
 		break;		
@@ -385,14 +383,35 @@ error:
 }
 
 
+void skip_parens(void)
+{
+	int level = 0;
+	char c;
+
+	for (;;) {
+		switch (c = *expr++) {
+		case '(':
+			level++;
+			break;
+		case ')':
+			if (--level == 0) {
+				return;
+			}
+			break;
+		case ';':
+		case '\0':
+			error("Syntax error in function call!");
+			return 0;
+		}
+	}
+}
+
 /* ----
  * push_val()
  * ----
  * extract a number and push it on the value stack
  */
-
-int
-push_val(int type)
+int push_val(int type)
 {
 	unsigned int mul, val;
 	int op;
@@ -430,7 +449,7 @@ push_val(int type)
 		if (*la == '(') {
 			/* function or inbuilt */
 			if (func_look()) {
-				if (!func_getargs())
+				if(!func_getargs())
 					return 0;
 
 				expr_stack[func_idx++] = expr;
@@ -446,6 +465,13 @@ push_val(int type)
 					return 1;
 				}
 				else {
+					if (pass == FIRST_PASS && ib->overridable != 0) {
+						/* on the first pass, we don't know for sure if it's an inbuilt or a
+						   function at all yet. so just skip evaluating */
+						skip_parens();
+						break;
+					}
+
 					if (ib->overridable == 2) {
 						char errbuf[256];
 						sprintf(errbuf, "Function %s has been hidden by another symbol!", &ib->name[1]);
@@ -618,9 +644,7 @@ getsym(void)
  * ----
  * push an operator on the stack
  */
-
-int
-push_op(int op)
+int push_op(int op)
 {
 	if (op != OP_OPEN) {
 		while (op_pri[op_stack[op_idx]] >= op_pri[op]) {
@@ -644,9 +668,7 @@ push_op(int op)
  * ----
  * apply an operator to the value stack
  */
-
-int
-do_op(void)
+int do_op(void)
 {
 	int val[2];
 	int op;

@@ -321,9 +321,7 @@ macro_getargs(int ip)
 }
 
 /* install a macro in the hash table */
-
-int
-macro_install(void)
+int macro_install(void)
 {
 	char c;
 	int hash = 0;

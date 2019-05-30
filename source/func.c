@@ -11,7 +11,7 @@ struct t_func *func_ptr;
 char func_line[128];
 char func_arg[8][10][80];
 int  func_argnum[8];
-/* I'm not sure if I need separate buffer space for all of thse, but never hurts to make sure */
+/* I'm not sure if I need separate buffer space for all of these, but never hurts to make sure */
 char func_argnumbuf[8][2];
 char func_fcntbuf[8][6];
 char func_argtypebuf[8][10][2];
@@ -25,15 +25,13 @@ int  fcntstack[8];
  * ----
  * .func pseudo
  */
-
-void
-do_func(int *ip)
+void do_func(int *ip)
 {
 	if (pass == LAST_PASS)
 		println();
 	else {
 		/* error checking */
-		if (lablptr == NULL) {
+		if (!lablptr) {
 			error("No name for this function!");
 			return;
 		}
@@ -63,9 +61,7 @@ do_func(int *ip)
 }
 
 /* search a function */
-
-int
-func_look(void)
+int func_look(void)
 {
 	int hash;
 
@@ -80,16 +76,14 @@ func_look(void)
 
 	/* ok */
 	if (func_ptr)
-		return (1);
+		return 1;
 
 	/* didn't find a function with this name */
-	return (0);
+	return 0;
 }
 
 /* install a function in the hash table */
-
-int
-func_install(int ip)
+int func_install(int ip)
 {
 	int hash;
 	t_inbuilt *ib = iblook(lablptr->name);
@@ -107,17 +101,17 @@ func_install(int ip)
 	/* check function name syntax */
 	if (strchr(&symbol[1], '.')) {
 		error("Invalid function name!");
-		return (0);
+		return 0;
 	}
 
 	/* extract function body */
 	if (func_extract(ip) == -1)
-		return (0);
+		return 0;
 
 	/* allocate a new func struct */
 	if ((func_ptr = (void *)malloc(sizeof(struct t_func))) == NULL) {
 		error("Out of memory!");
-		return (0);
+		return 0;
 	}
 
 	/* initialize it */
@@ -128,13 +122,11 @@ func_install(int ip)
 	func_tbl[hash] = func_ptr;
 
 	/* ok */
-	return (1);
+	return 1;
 }
 
 /* extract function body */
-
-int
-func_extract(int ip)
+int func_extract(int ip)
 {
 	char *ptr;
 	char  c;
@@ -206,22 +198,20 @@ func_extract(int ip)
 	}
 
 	/* return the number of args */
-	return (max_arg);
+	return max_arg;
 }
 
 /* extract function args */
-
-int
-func_getargs(void)
+int func_getargs(void)
 {
-	char c, *ptr, *line;
+	char c, *cur_arg, *line;
 	int arg, level, space, read_cur_func_arg, empty_args, last_arg, arg_valid, arg_type;
 	int i, x;
 
 	/* can not nest too much macros */
 	if (func_idx == 7) {
 		error("Too many nested function calls!");
-		return (0);
+		return 0;
 	}
 
 	/* skip spaces */
@@ -230,11 +220,11 @@ func_getargs(void)
 
 	/* function args must be enclosed in parenthesis */
 	if (*expr++ != '(')
-		return (0);
+		return 0;
 
 	/* initialize args */
     line = NULL;
-	ptr  = func_arg[func_idx][0];
+	cur_arg = func_arg[func_idx][0];
 
 	for (i = 0; i < 9; i++) {
 		func_arg[func_idx][i][0] = '\0';
@@ -266,10 +256,10 @@ func_getargs(void)
 			last_arg = 0;
 
 			arg++;
-			ptr = func_arg[func_idx][arg];
+			cur_arg = func_arg[func_idx][arg];
 			if (arg == 9) {
 				error("Too many arguments for a function!");
-				return (0);
+				return 0;
 			}
 			break;
 
@@ -283,7 +273,7 @@ func_getargs(void)
 		case ')':
 			sprintf(func_argnumbuf[func_idx], "%1i", func_argnum[func_idx]);
 			sprintf(func_fcntbuf[func_idx], "%05i", fcntstack[func_idx]);
-			return (1);
+			return 1;
 
 		/* arg */
 		default:
@@ -319,6 +309,7 @@ func_getargs(void)
 			sprintf(func_argtypebuf[func_idx][arg], "%1i", arg_type);
 
 			for (;;) {
+				/* function end? */
 				if (c == '\0') {
 					if (!read_cur_func_arg)
 						break;
@@ -364,7 +355,7 @@ func_getargs(void)
 					}
 					else {
 						error("Invalid function argument!");
-						return (0);
+						return 0;
 					}
 
 					continue;
@@ -380,8 +371,8 @@ func_getargs(void)
 				if (space) {
 					if (c != ' ') {
 						while (i < x)
-							ptr[i++] = ' ';
-						ptr[i++] = c;
+							cur_arg[i++] = ' ';
+						cur_arg[i++] = c;
 						space = 0;
 					}
 				}
@@ -389,11 +380,11 @@ func_getargs(void)
 					space = 1;
 				}
 				else {
-					ptr[i++] = c;
+					cur_arg[i++] = c;
 				}
 				if (i == 80) {
 					error("Invalid function argument length!");
-					return (0);
+					return 0;
 				}
 				x++;
 				if (read_cur_func_arg)
@@ -401,7 +392,7 @@ func_getargs(void)
 				else
 					c = *expr++;
 			}
-			ptr[i] = '\0';
+			cur_arg[i] = '\0';
 			expr--;
 			break;
 		}
