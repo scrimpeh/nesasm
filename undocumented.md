@@ -24,6 +24,7 @@ People should know this already, but if they don't, here it is.
 #### Operators
 
 * `<>` is equivalent to `!=`
+* `DEFINED(x)` returns 1 if the symbol is defined, and 0 otherwise. If no symbol is given, it throws an error.
 
 #### Directives
 
