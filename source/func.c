@@ -37,7 +37,10 @@ do_func(int *ip)
 			error("No name for this function!");
 			return;
 		}
-		if (lablptr->refcnt) {
+		if (lablptr->overridable) {
+			lablptr->overridable = 0;
+		}
+		else if (lablptr->refcnt) {
 			switch (lablptr->type) {
 			case MACRO:
 				fatal_error("Symbol already used by a macro!");

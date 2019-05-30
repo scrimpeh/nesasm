@@ -47,7 +47,9 @@ do_macro(int *ip)
 			if ((lablptr = stlook(1)) == NULL)
 				return;
 		}
-		if (lablptr->refcnt) {
+		if (lablptr->overridable)
+			lablptr->overridable = 0;
+		else if (lablptr->refcnt) {
 			switch (lablptr->type) {
 			case MACRO:
 				fatal_error("Macro already defined!");

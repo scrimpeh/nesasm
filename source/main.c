@@ -262,7 +262,7 @@ main(int argc, char **argv)
 
 	hlablset("NESASM_S", 1);
 	hlablset("NESASM_S_VER", 0);
-	hlablset("NESASM_S_REV", 0);
+	hlablset("NESASM_S_REV", 1);
 
 	/* init global variables */
 	max_zp = 0x01;

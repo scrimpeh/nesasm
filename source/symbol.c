@@ -232,42 +232,52 @@ labldef(int lval, int flag)
 
 	/* first pass */
 	if (pass == FIRST_PASS) {
-		switch (lablptr->type) {
-		/* undefined */
-		case UNDEF:
+		/* newly added keywords need a compatibility provision */
+		if (lablptr->overridable) {
+			lablptr->overridable = 0;
 			lablptr->type = DEFABS;
 			lablptr->value = lval;
-			break;
+		}
+		else {
 
-		/* already defined - error */
-		case IFUNDEF:
-			error("Can not define this label, declared as undefined in an IF expression!");
-			return (-1);
 
-		case MACRO:
-			error("Symbol already used by a macro!");
-			return (-1);
-
-		case FUNC:
-			error("Symbol already used by a function!");
-			return (-1);
-
-		default:
-			/* reserved label */
-			if (lablptr->reserved) {
-				fatal_error("Reserved symbol!");
-				return (-1);
-			}
-
-			/* compare the values */
-			if (lablptr->value == lval)
+			switch (lablptr->type) {
+				/* undefined */
+			case UNDEF:
+				lablptr->type = DEFABS;
+				lablptr->value = lval;
 				break;
 
-			/* normal label */
-			lablptr->type = MDEF;
-			lablptr->value = 0;
-			error("Label multiply defined!");
-			return (-1);
+				/* already defined - error */
+			case IFUNDEF:
+				error("Can not define this label, declared as undefined in an IF expression!");
+				return (-1);
+
+			case MACRO:
+				error("Symbol already used by a macro!");
+				return (-1);
+
+			case FUNC:
+				error("Symbol already used by a function!");
+				return (-1);
+
+			default:
+				/* reserved label */
+				if (lablptr->reserved) {
+					fatal_error("Reserved symbol!");
+					return (-1);
+				}
+
+				/* compare the values */
+				if (lablptr->value == lval)
+					break;
+
+				/* normal label */
+				lablptr->type = MDEF;
+				lablptr->value = 0;
+				error("Label multiply defined!");
+				return (-1);
+			}
 		}
 	}
 
