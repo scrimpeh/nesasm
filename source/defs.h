@@ -174,6 +174,7 @@ typedef struct t_symbol {
 	struct t_symbol *local;
 	struct t_proc   *proc;
 	int  type;
+	int  overridable;
 	int  value;
 	int  bank;
 	int  page;

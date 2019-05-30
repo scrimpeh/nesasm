@@ -129,6 +129,7 @@ struct t_symbol *stlook(int flag);
 struct t_symbol *stinstall(int hash, int type);
 int  labldef(int lval, int flag);
 void lablset(char *name, int val);
+void hlablset(char *name, int val);
 void lablremap(void);
 void funcdump(const char *name, const char *in_fname);
 

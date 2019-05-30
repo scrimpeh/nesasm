@@ -35,8 +35,6 @@
 #define STANDARD_CD	1
 #define SUPER_CD	2
 
-#define ASM_VER 2
-
 /* variables */
 unsigned char ipl_buffer[4096];
 char   in_fname[128];	/* file names, input */
@@ -250,7 +248,7 @@ main(int argc, char **argv)
 	addinst(machine->pseudo_inst);
 
 	/* predefined symbols */
-	lablset("MAGICKIT", ASM_VER);
+	lablset("MAGICKIT", 1);
 	lablset("DEVELO", develo_opt | mx_opt);
 	lablset("CDROM", cd_opt | scd_opt);
 	lablset("_bss_end", 0);
@@ -261,6 +259,10 @@ main(int argc, char **argv)
 	lablset("*", 0); /* PC */
 	pc_ptr = lablptr;
 	pc_ptr->type = PC;
+
+	hlablset("NESASM_S", 1);
+	hlablset("NESASM_S_VER", 0);
+	hlablset("NESASM_S_REV", 0);
 
 	/* init global variables */
 	max_zp = 0x01;

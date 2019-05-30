@@ -190,6 +190,7 @@ struct t_symbol *stinstall(int hash, int type)
 	sym->reserved = 0;
 	sym->data_type = -1;
 	sym->data_size = 0;
+	sym->overridable = 0;
 	strcpy(sym->name, symbol);
 
 	/* add the symbol to the hash table */
@@ -305,6 +306,23 @@ labldef(int lval, int flag)
 
 
 /* ----
+ * hlablset()
+ * ----
+ * create/update a hidable symbol
+ */
+
+void
+hlablset(char *name, int val)
+{
+	lablset(name, val);
+	if (lablptr) {
+		lablptr->reserved = 0;
+		lablptr->overridable = 1;
+	}
+}
+
+
+/* ----
  * lablset()
  * ----
  * create/update a reserved symbol
@@ -313,9 +331,7 @@ labldef(int lval, int flag)
 void
 lablset(char *name, int val)
 {
-	int len;
-
-	len = strlen(name);
+	int len = strlen(name);
 	lablptr = NULL;
 
 	if (len) {
@@ -329,9 +345,6 @@ lablset(char *name, int val)
 			lablptr->reserved = 1;
 		}
 	}
-
-	/* ok */
-	return;
 }
 
 
