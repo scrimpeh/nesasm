@@ -32,7 +32,7 @@ int evaluate(int *ip, char last_char)
 	expr_lablcnt = 0;
 	op = OP_START;
 	func_idx = 0;
-	inbuilt_arg = 0;
+	inbuilt_arg[0] = 0;
 
 	/* array index to pointer */
 	expr = &prlnbuf[*ip];
@@ -79,24 +79,24 @@ cont:
 		if (expr_inbuilt[func_idx]) {
 			/* first of all, pull 9 args from the argbuf and push them on the value stack */
 			/* there can be more flexibility later */
-			if (inbuilt_arg < 9) {
-				arg_empty[inbuilt_arg] = 1;
+			if (inbuilt_arg[func_idx] < 9) {
+				arg_empty[inbuilt_arg[func_idx]][func_idx] = 1;
 				expr_stack[func_idx++] = expr;
-				expr = func_arg[func_idx - 2][inbuilt_arg];
+				expr = func_arg[func_idx - 2][inbuilt_arg[func_idx - 1]];
 
 				/* short circuit and test if an arg is empty */
 				char *la = expr;
 				while (*la++) {
 					if (!isspace(*la)) {
-						arg_empty[inbuilt_arg] = 0;
+						arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1] = 0;
 						break;
 					}
 				}
-				if (arg_empty[inbuilt_arg]) {
+				if (arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1]) {
 					val_idx++;
 				}
 				push_op(OP_START);
-				inbuilt_arg++;
+				inbuilt_arg[func_idx - 1]++;
 
 				continue;
 			}
@@ -548,7 +548,7 @@ int push_val(int type)
 					expr_stack[func_idx++] = expr;
 					expr_inbuilt[func_idx] = ib;
 
-					inbuilt_arg = 0;
+					inbuilt_arg[func_idx] = 0;
 
 					/* okay so basically, what we need to here is this: */
 					/* i think it'd be madness to have an inbuilt stack separate from the */

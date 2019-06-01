@@ -59,8 +59,8 @@ unsigned char *expr;	/* pointer to the expression string */
 unsigned char *expr_stack[16];	/* expression stack */
 t_symbol *expr_lablptr;	/* pointer to the lastest label */
 t_inbuilt *expr_inbuilt[16] = { [0] = NULL };
-int inbuilt_arg = 0;
-int arg_empty[10];
+int inbuilt_arg[16];
+int arg_empty[16][10];
 /* NULL if the current expr is parsed normally, or the pointer to the inbuilt if it is handled by one */
 int expr_lablcnt;		/* number of labels seen in an expression */
 
