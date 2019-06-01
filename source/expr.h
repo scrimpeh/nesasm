@@ -57,13 +57,10 @@ int op_idx, val_idx;	/* index in the operator and value stacks */
 int need_operator;		/* when set await an operator, else await a value */
 unsigned char *expr;	/* pointer to the expression string */
 unsigned char *expr_stack[16];	/* expression stack */
-struct t_symbol *expr_lablptr;	/* pointer to the lastest label */
-int expr_lablcnt;		/* number of label seen in an expression */
-char *keyword[8] = {	/* predefined functions */
-	"\7DEFINED",
-	"\4HIGH", "\3LOW",
-	"\4PAGE", "\4BANK",
-	"\4VRAM", "\3PAL",
-	"\6SIZEOF"
-};
+t_symbol *expr_lablptr;	/* pointer to the lastest label */
+t_inbuilt *expr_inbuilt[16] = { [0] = NULL };
+int inbuilt_arg = 0;
+int arg_empty[10];
+/* NULL if the current expr is parsed normally, or the pointer to the inbuilt if it is handled by one */
+int expr_lablcnt;		/* number of labels seen in an expression */
 

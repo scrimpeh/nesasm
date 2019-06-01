@@ -32,6 +32,7 @@ int evaluate(int *ip, char last_char)
 	expr_lablcnt = 0;
 	op = OP_START;
 	func_idx = 0;
+	inbuilt_arg = 0;
 
 	/* array index to pointer */
 	expr = &prlnbuf[*ip];
@@ -74,6 +75,59 @@ cont:
 
 	/* parser main loop */
 	while (!end) {
+
+		if (expr_inbuilt[func_idx]) {
+			/* first of all, pull 9 args from the argbuf and push them on the value stack */
+			/* there can be more flexibility later */
+			if (inbuilt_arg < 9) {
+				arg_empty[inbuilt_arg] = 1;
+				expr_stack[func_idx++] = expr;
+				expr = func_arg[func_idx - 2][inbuilt_arg];
+
+				/* short circuit and test if an arg is empty */
+				char *la = expr;
+				while (*la++) {
+					if (!isspace(*la)) {
+						arg_empty[inbuilt_arg] = 0;
+						break;
+					}
+				}
+				if (arg_empty[inbuilt_arg]) {
+					val_idx++;
+				}
+				push_op(OP_START);
+				inbuilt_arg++;
+
+				continue;
+			}
+			else {
+				/* all args gathered */
+				int op = expr_inbuilt[func_idx]->op_type;
+				expr_inbuilt[func_idx--] = NULL;
+				val_idx -= 8;
+				switch (op) {
+				default:
+					error("Cannot do this operation yet!");
+				case OP_HIGH:
+					val_stack[val_idx] &= 0xFF00;
+					val_stack[val_idx] >>= 8;
+					break;
+				case OP_LOW:
+					val_stack[val_idx] &= 0xFF;
+					break;
+				case OP_BANK:
+					if (!expr_lablptr) {
+						error("Undefined operand in BANK");
+						break;
+					}
+					val_stack[val_idx] = expr_lablptr->bank;
+					break;
+				}
+
+				need_operator = 1;
+			}
+		}
+
 		c = *expr;
 
 		/* number */
@@ -128,7 +182,7 @@ cont:
 				else {
 					if (c < '1' || c > '9') {
 						error("Invalid function argument index!");
-						return (0);
+						return 0;
 					}
 					arg = c - '1';
 					expr_stack[func_idx++] = expr;
@@ -141,7 +195,7 @@ cont:
 				if (need_operator)
 					goto error;
 				if (!push_val(T_HEXA))
-					return (0);
+					return 0;
 				break;
 
 			/* character prefix */
@@ -321,6 +375,14 @@ cont:
 				if (func_idx) {
 					func_idx--;
 					expr = expr_stack[func_idx];
+					if (expr_inbuilt[func_idx]) {
+						/* still currently gathering args */
+						while (op_stack[op_idx] != OP_START) {
+							if (!do_op())
+								return 0;
+						}
+						op_idx--;
+					}
 					break;
 				}
 			case ';':
@@ -453,6 +515,7 @@ int push_val(int type)
 					return 0;
 
 				expr_stack[func_idx++] = expr;
+				expr_inbuilt[func_idx] = NULL;
 				fcntmax++;
 				fcounter = fcntmax;
 				expr = func_ptr->line;
@@ -462,7 +525,7 @@ int push_val(int type)
 				t_inbuilt *ib = iblook(symbol);
 				if (!ib) {
 					error("Unknown function specified!");
-					return 1;
+					return 0;
 				}
 				else {
 					if (pass == FIRST_PASS && ib->overridable != 0) {
@@ -476,8 +539,32 @@ int push_val(int type)
 						char errbuf[256];
 						sprintf(errbuf, "Function %s has been hidden by another symbol!", &ib->name[1]);
 						error(errbuf);
-						return 1;
+						return 0;
 					}
+
+					if (!func_getargs())
+						return 0;
+
+					expr_stack[func_idx++] = expr;
+					expr_inbuilt[func_idx] = ib;
+
+					inbuilt_arg = 0;
+
+					/* okay so basically, what we need to here is this: */
+					/* i think it'd be madness to have an inbuilt stack separate from the */
+					/* function stack -- since previously, an inbuilt could only sit at the */
+					/* top of the stack, we can probably share the stack */
+					
+					/* ok, the idea is the following */
+					/* inbuilt funcs should be treated as regular funcs as much as possible */
+					/* excpet, instead of parsing them (hard to do without source code) */
+					/* a flag for every level of expression tells the parser if it is looking at an */
+					/* inbuilt, and if so, which callback to invoke */
+
+					/* note that inbuilts must leave the value stack or the op stack as functions do */
+
+					/* inbuilts should preferrably have full control over the char array of arguments */
+					/* which can be parsed, or processed in another way that they please */
 
 					op = ib->op_type;
 
@@ -495,8 +582,9 @@ int push_val(int type)
 						expr_lablcnt = 0;
 						break;
 					}
-
-					return push_op(op);
+					//skip_parens();
+					return 1;
+					//return push_op(op);
 				}
 			}
 		}
@@ -646,7 +734,7 @@ getsym(void)
  */
 int push_op(int op)
 {
-	if (op != OP_OPEN) {
+	if (op != OP_OPEN && op != OP_START) {
 		while (op_pri[op_stack[op_idx]] >= op_pri[op]) {
 			if (!do_op())
 				return 0;
