@@ -8,7 +8,7 @@
 
 struct t_func *func_tbl[256];
 struct t_func *func_ptr;
-char func_line[128];
+char func_line[FUNC_LENGTH];
 char func_arg[8][10][80];
 int  func_argnum[8];
 /* I'm not sure if I need separate buffer space for all of these, but never hurts to make sure */
@@ -189,7 +189,7 @@ int func_extract(int ip)
 		default:
 		   *ptr++ = c;
 		    i++;
-			if (i == 127) {
+			if (i == FUNC_LENGTH - 1) {
 				error("Function line too long!");
 				return (-1);
 			}

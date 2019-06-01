@@ -208,6 +208,12 @@ typedef struct t_macro {
 	char name[SBOLSZ];
 } t_macro;
 
+/* FUNC LIMITS */
+#define FUNC_LENGTH 128
+#define FUNC_NEST_COUNT 8
+#define FUNC_ARG_LENGTH 80
+#define FUNC_ARG_COUNT 10
+
 typedef struct t_func {
 	struct t_func *next;
 	char line[128];
