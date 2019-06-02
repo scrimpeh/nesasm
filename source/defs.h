@@ -193,7 +193,7 @@ typedef struct t_symbol {
 typedef struct t_inbuilt {
 	struct t_inbuilt *next;
 	int  overridable;	/* 0: not overridable, 1: overridable, 2: overridden */
-	int  op_type;
+	int (*op)(void);
 	char name[SBOLSZ];
 } t_inbuilt;
 

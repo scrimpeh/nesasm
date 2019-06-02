@@ -265,18 +265,18 @@ main(int argc, char **argv)
 	hlablset("NESASM_S_REV", 1);
 
 	/* todo: move this somewhere else */
-	ibregister("DEFINED", 21, 0);
-	ibregister("HIGH", 22, 0);
-	ibregister("LOW", 23, 0);
-	ibregister("PAGE", 24, 0);
-	ibregister("BANK", 25, 0);
+	ibregister("DEFINED", NULL, 0);
+	ibregister("HIGH", ib_high, 0);
+	ibregister("LOW", ib_low, 0);
+	ibregister("PAGE", NULL, 0);
+	ibregister("BANK", ib_bank, 0);
 	if (machine->type == MACHINE_PCE) {
-		ibregister("VRAM", 26, 0);
-		ibregister("PAL", 27, 0);
+		ibregister("VRAM", NULL, 0);
+		ibregister("PAL", NULL, 0);
 	}
-	ibregister("SIZEOF", 28, 0);
+	ibregister("SIZEOF", NULL, 0);
 	/* test inbuilt that can be overriden */
-	ibregister("SQUARE", 29, 1);
+	ibregister("SQUARE", NULL, 1);
 
 	/* init global variables */
 	max_zp = 0x01;

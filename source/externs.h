@@ -50,6 +50,7 @@ extern int   func_argnum[8];
 extern char  func_argnumbuf[8][2];
 extern char  func_fcntbuf[8][6];
 extern char  func_argtypebuf[8][10][2];
+extern int   func_argtype[8][10];
 extern int   func_idx;
 extern int   fcounter, fcntmax;
 extern int   fcntstack[8];

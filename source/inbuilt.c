@@ -55,7 +55,7 @@ t_inbuilt *iblook(const char *buf)
  * register a new inbuilt with the name "name", and the operation type "op"
  */
 
-void ibregister(char *name, int op, int overridable)
+void ibregister(char *name, int (*op)(void), int overridable)
 {
 	int hash, len = strlen(name);
 	t_inbuilt *ib;
@@ -66,7 +66,7 @@ void ibregister(char *name, int op, int overridable)
 		return NULL;
 	}
 
-	ib->op_type = op;
+	ib->op = op;
 	ib->name[0] = strlen(name);
 	strcpy(&ib->name[1], name);
 	ib->overridable = overridable;

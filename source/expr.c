@@ -7,6 +7,74 @@
 #include "expr.h"
 #include "util/strcasecmp.h"
 
+
+int ib_get_one_arg(const char* name) 
+{
+	char buf[32];
+	/* argument checks */
+	if (func_argtype[func_idx - 1][0] == NO_ARG) {
+		sprintf(buf, "No argument for function %s", name);
+		error(buf);
+		return -1;
+	}
+
+	/* others must be empty*/
+	for (int i = 1; i < FUNC_ARG_COUNT; i++) {
+		if (func_argtype[func_idx - 1][i] != NO_ARG) {
+			sprintf(buf, "Too many arguments for function %s", name);
+			error(buf);
+			return -1;
+		}
+	}
+
+	inbuilt_arg[func_idx]++;
+
+	return 1; /* get arg 1 */
+}
+
+/*
+return values for inbuilts:
+0: OK, got value
+1 - 9: Need arg #1 - 9 (go back, parse it and push it on the stack)
+-1 error
+ */
+int ib_high(void)
+{
+	/* inbuilt_arg is a pseudo-sate variable */
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("HIGH"));		/* must get back to parsing one */
+
+	/* all arguments are present */
+	val_stack[val_idx] = (val_stack[val_idx] & 0xFF00) >> 8;
+	return 0;
+}
+
+int ib_low(void)
+{
+	/* inbuilt_arg is a pseudo-sate variable */
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("LOW"));		/* must get back to parsing one */
+
+	/* all arguments are present */
+	val_stack[val_idx] &= 0xFF;
+	return 0;
+}
+
+int ib_bank(void)
+{
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("BANK"));
+
+	if (!expr_lablptr) {
+		error("No symbol specified for function BANK!");
+		return -1;
+	}
+
+	/* all arguments are present */
+	val_stack[++val_idx] = expr_lablptr->bank;
+	return 0;
+}
+
 /* ----
  * evaluate()
  * ----
@@ -77,55 +145,71 @@ cont:
 	while (!end) {
 
 		if (expr_inbuilt[func_idx]) {
-			/* first of all, pull 9 args from the argbuf and push them on the value stack */
-			/* there can be more flexibility later */
-			if (inbuilt_arg[func_idx] < 9) {
-				arg_empty[inbuilt_arg[func_idx]][func_idx] = 1;
-				expr_stack[func_idx++] = expr;
-				expr = func_arg[func_idx - 2][inbuilt_arg[func_idx - 1]];
-
-				/* short circuit and test if an arg is empty */
-				char *la = expr;
-				while (*la++) {
-					if (!isspace(*la)) {
-						arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1] = 0;
-						break;
-					}
-				}
-				if (arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1]) {
-					val_idx++;
-				}
-				push_op(OP_START);
-				inbuilt_arg[func_idx - 1]++;
-
-				continue;
-			}
-			else {
-				/* all args gathered */
-				int op = expr_inbuilt[func_idx]->op_type;
-				expr_inbuilt[func_idx--] = NULL;
-				val_idx -= 8;
-				switch (op) {
-				default:
-					error("Cannot do this operation yet!");
-				case OP_HIGH:
-					val_stack[val_idx] &= 0xFF00;
-					val_stack[val_idx] >>= 8;
-					break;
-				case OP_LOW:
-					val_stack[val_idx] &= 0xFF;
-					break;
-				case OP_BANK:
-					if (!expr_lablptr) {
-						error("Undefined operand in BANK");
-						break;
-					}
-					val_stack[val_idx] = expr_lablptr->bank;
-					break;
-				}
-
+			int status = expr_inbuilt[func_idx]->op();
+			if (status == -1)
+				return 0;
+			else if (status == 0) {
+				/* inbuilt done */
+				expr_inbuilt[func_idx--] = NULL;	/* forget inbuilt */
 				need_operator = 1;
 			}
+			else if (status <= 10) {
+				/* need new arg */
+				push_op(OP_START);
+				expr_stack[func_idx++] = expr;
+				expr = func_arg[func_idx - 2][status - 1];
+				continue;
+			}
+
+			///* first of all, pull 9 args from the argbuf and push them on the value stack */
+			///* there can be more flexibility later */
+			//if (inbuilt_arg[func_idx] < 9) {
+			//	arg_empty[inbuilt_arg[func_idx]][func_idx] = 1;
+			//	expr_stack[func_idx++] = expr;
+			//	expr = func_arg[func_idx - 2][inbuilt_arg[func_idx - 1]];
+			//
+			//	/* short circuit and test if an arg is empty */
+			//	char *la = expr;
+			//	while (*la++) {
+			//		if (!isspace(*la)) {
+			//			arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1] = 0;
+			//			break;
+			//		}
+			//	}
+			//	if (arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1]) {
+			//		val_idx++;
+			//	}
+			//	push_op(OP_START);
+			//	inbuilt_arg[func_idx - 1]++;
+			//
+			//	continue;
+			//}
+			//else {
+			//	/* all args gathered */
+			//	int op = expr_inbuilt[func_idx]->op_type;
+			//	expr_inbuilt[func_idx--] = NULL;
+			//	val_idx -= 8;
+			//	switch (op) {
+			//	default:
+			//		error("Cannot do this operation yet!");
+			//	case OP_HIGH:
+			//		val_stack[val_idx] &= 0xFF00;
+			//		val_stack[val_idx] >>= 8;
+			//		break;
+			//	case OP_LOW:
+			//		val_stack[val_idx] &= 0xFF;
+			//		break;
+			//	case OP_BANK:
+			//		if (!expr_lablptr) {
+			//			error("Undefined operand in BANK");
+			//			break;
+			//		}
+			//		val_stack[val_idx] = expr_lablptr->bank;
+			//		break;
+			//	}
+			//
+			//	need_operator = 1;
+			//}
 		}
 
 		c = *expr;
@@ -566,10 +650,10 @@ int push_val(int type)
 					/* inbuilts should preferrably have full control over the char array of arguments */
 					/* which can be parsed, or processed in another way that they please */
 
-					op = ib->op_type;
+					//op = ib->op_type;
 
 					/* extra setup for functions that send back symbol infos */
-					switch (op) {
+					/*switch (op) {
 					case OP_DEFINED:
 					case OP_HIGH:
 					case OP_LOW:
@@ -577,11 +661,13 @@ int push_val(int type)
 					case OP_BANK:
 					case OP_VRAM:
 					case OP_PAL:
-					case OP_SIZEOF:
+					case OP_SIZEOF:*/
+					if (ib->op == ib_bank) {
 						expr_lablptr = NULL;
 						expr_lablcnt = 0;
-						break;
 					}
+					//	break;
+					//}
 					//skip_parens();
 					return 1;
 					//return push_op(op);

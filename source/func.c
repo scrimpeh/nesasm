@@ -15,6 +15,7 @@ int  func_argnum[8];
 char func_argnumbuf[8][2];
 char func_fcntbuf[8][6];
 char func_argtypebuf[8][10][2];
+int  func_argtype[8][10];
 int  func_idx;
 int  fcounter, fcntmax;
 int  fcntstack[8];
@@ -228,6 +229,7 @@ int func_getargs(void)
 
 	for (i = 0; i < 9; i++) {
 		func_arg[func_idx][i][0] = '\0';
+		func_argtype[func_idx][i] = NO_ARG;
 		sprintf(func_argtypebuf[func_idx][i], "%1i", NO_ARG);
 	}
 	func_fcntbuf[func_idx][0] = '\0';
@@ -306,6 +308,7 @@ int func_getargs(void)
 			default:	/* label or string */
 				arg_type = (isdigit(c) || c == '$' || c == '%') ? ARG_ABS : ARG_LABEL; break;
 			}
+			func_argtype[func_idx][arg] = arg_type;
 			sprintf(func_argtypebuf[func_idx][arg], "%1i", arg_type);
 
 			for (;;) {

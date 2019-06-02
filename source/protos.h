@@ -59,6 +59,12 @@ int  push_op(int op);
 int  do_op(void);
 int  check_func_args(char *func_name);
 
+/* inbuilt callbacks */
+int ib_get_one_arg(const char* name);
+int ib_high(void);
+int ib_low(void);
+int ib_bank(void);
+
 /* FUNC.C */
 void do_func(int *ip);
 int  func_look(void);
@@ -69,7 +75,7 @@ int  func_getargs(void);
 /* INBUILT.C */
 int symcasehash(const char *buf);
 t_inbuilt *iblook(const char *buf);
-void ibregister(char *name, int op, int overridable);
+void ibregister(char *name, int(*op)(void), int overridable);
 
 /* INPUT.C */
 void  init_path(void);
