@@ -411,29 +411,6 @@ error:
 }
 
 
-void skip_parens(void)
-{
-	int level = 0;
-	char c;
-
-	for (;;) {
-		switch (c = *expr++) {
-		case '(':
-			level++;
-			break;
-		case ')':
-			if (--level == 0) {
-				return;
-			}
-			break;
-		case ';':
-		case '\0':
-			error("Syntax error in function call!");
-			return 0;
-		}
-	}
-}
-
 /* ----
  * push_val()
  * ----
@@ -494,13 +471,6 @@ int push_val(int type)
 					return 0;
 				}
 				else {
-					if (pass == FIRST_PASS && ib->overridable != 0) {
-						/* on the first pass, we don't know for sure if it's an inbuilt or a
-						   function at all yet. so just skip evaluating */
-						skip_parens();
-						break;
-					}
-
 					if (ib->overridable == 2) {
 						char errbuf[256];
 						sprintf(errbuf, "Function %s has been hidden by another symbol!", &ib->name[1]);
