@@ -92,6 +92,42 @@ int ib_bank(void)
 	return 0;
 }
 
+int ib_pow(void)
+{
+	if (inbuilt_arg[func_idx] == 0) {
+		char buf[64];
+		/* argument checks */
+		if (func_argtype[func_idx - 1][0] == NO_ARG || func_argtype[func_idx - 1][1] == NO_ARG) {
+			error("Missing Argument for function POW");
+			return -1;
+		}
+
+		/* others must be empty*/
+		for (int i = 2; i < FUNC_ARG_COUNT; i++) {
+			if (func_argtype[func_idx - 1][i] != NO_ARG) {
+				sprintf(buf, "Too many arguments for function POW");
+				error(buf);
+				return -1;
+			}
+		}
+
+		inbuilt_arg[func_idx]++;
+
+		return 1; /* get arg 1 */
+	}
+	else if (inbuilt_arg[func_idx] == 1) {
+		inbuilt_arg[func_idx]++;
+		return 2; /* get arg 2 */
+	}
+	else {
+		if (val_stack[val_idx] == 0)
+			val_stack[--val_idx] = 1;
+		else for (int exp = val_stack[val_idx--], base = val_stack[val_idx]; exp > 1; exp--) 
+			val_stack[val_idx] *= base;
+		return 0;
+	}
+}
+
 int ib_page(void)
 {
 	if (inbuilt_arg[func_idx] == 0)

@@ -277,6 +277,7 @@ main(int argc, char **argv)
 	ibregister("SIZEOF", ib_sizeof, 0);
 	/* test inbuilt that can be overriden */
 	ibregister("SQUARE", ib_square, 1);
+	ibregister("POW", ib_pow, 1);
 
 	/* init global variables */
 	max_zp = 0x01;
