@@ -69,7 +69,6 @@ int ib_page(void);
 int ib_defined(void);
 int ib_pal(void);
 int ib_vram(void);
-int ib_square(void);
 int ib_pow(void);
 int ib_sizeof(void);
 

@@ -955,14 +955,6 @@ int ib_sizeof(void) {
 	return 0;
 }
 
-int ib_square(void) {
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("SQUARE"));
-
-	val_stack[val_idx] *= val_stack[val_idx];
-	return 0;
-}
-
 int ib_defined(void) {
 	if (inbuilt_arg[func_idx] == 0)
 		return(ib_get_one_arg("DEFINED"));
