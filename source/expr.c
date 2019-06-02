@@ -7,211 +7,6 @@
 #include "expr.h"
 #include "util/strcasecmp.h"
 
-
-int ib_get_one_arg(const char *name) 
-{
-	char buf[64];
-	/* argument checks */
-	if (func_argtype[func_idx - 1][0] == NO_ARG) {
-		sprintf(buf, "No argument for function %s", name);
-		error(buf);
-		return -1;
-	}
-
-	/* others must be empty*/
-	for (int i = 1; i < FUNC_ARG_COUNT; i++) {
-		if (func_argtype[func_idx - 1][i] != NO_ARG) {
-			sprintf(buf, "Too many arguments for function %s", name);
-			error(buf);
-			return -1;
-		}
-	}
-
-	inbuilt_arg[func_idx]++;
-
-	return 1; /* get arg 1 */
-}
-
-int ib_need_one_symbol(const char *name) {
-	char buf[64];
-
-	if (!expr_lablptr || expr_lablcnt == 0) {
-		sprintf(buf, "No symbol specified for function %s", name);
-		error(buf);
-		return 0;
-	}
-	if (expr_lablcnt > 1) {
-		sprintf(buf, "Too many symbols for function %s", name);
-		error(buf);
-		return 0;
-	}
-
-	return 1;
-}
-
-/*
-return values for inbuilts:
-0: OK, got value
-1 - 9: Need arg #1 - 9 (go back, parse it and push it on the stack)
--1 error
- */
-int ib_high(void)
-{
-	/* inbuilt_arg is a pseudo-sate variable */
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("HIGH"));		/* must get back to parsing one */
-
-	/* all arguments are present */
-	val_stack[val_idx] = (val_stack[val_idx] & 0xFF00) >> 8;
-	return 0;
-}
-
-int ib_low(void)
-{
-	/* inbuilt_arg is a pseudo-sate variable */
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("LOW"));		/* must get back to parsing one */
-
-	/* all arguments are present */
-	val_stack[val_idx] &= 0xFF;
-	return 0;
-}
-
-int ib_bank(void)
-{
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("BANK"));
-
-	if (!ib_need_one_symbol("BANK"))
-		return -1;
-
-	if (pass == LAST_PASS && expr_lablptr->bank == RESERVED_BANK)
-		error("No BANK index for this symbol!");
-
-	val_stack[val_idx] = expr_lablptr->bank;
-	return 0;
-}
-
-int ib_pow(void)
-{
-	if (inbuilt_arg[func_idx] == 0) {
-		char buf[64];
-		/* argument checks */
-		if (func_argtype[func_idx - 1][0] == NO_ARG || func_argtype[func_idx - 1][1] == NO_ARG) {
-			error("Missing Argument for function POW");
-			return -1;
-		}
-
-		/* others must be empty*/
-		for (int i = 2; i < FUNC_ARG_COUNT; i++) {
-			if (func_argtype[func_idx - 1][i] != NO_ARG) {
-				sprintf(buf, "Too many arguments for function POW");
-				error(buf);
-				return -1;
-			}
-		}
-
-		inbuilt_arg[func_idx]++;
-
-		return 1; /* get arg 1 */
-	}
-	else if (inbuilt_arg[func_idx] == 1) {
-		inbuilt_arg[func_idx]++;
-		return 2; /* get arg 2 */
-	}
-	else {
-		if (val_stack[val_idx] == 0)
-			val_stack[--val_idx] = 1;
-		else for (int exp = val_stack[val_idx--], base = val_stack[val_idx]; exp > 1; exp--) 
-			val_stack[val_idx] *= base;
-		return 0;
-	}
-}
-
-int ib_page(void)
-{
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("PAGE"));
-
-	val_stack[val_idx] >>= 13;
-
-	if (val_stack[val_idx] > 7) {
-		error("Page index out of range!");
-		return -1;
-	}
-
-	return 0;
-}
-int ib_vram(void) {
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("VRAM"));
-
-	if (!ib_need_one_symbol("VRAM"))
-		return -1;
-
-	if (pass == LAST_PASS) {
-		if (expr_lablptr->vram == -1)
-			error("No palette index for this symbol!");
-	}
-
-	val_stack[val_idx] = expr_lablptr->vram;
-}
-int ib_pal(void) {
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("PAL"));
-
-	if (!ib_need_one_symbol("PAL"))
-		return -1;
-
-	if (pass == LAST_PASS) {
-		if (expr_lablptr->pal == -1)
-			error("No palette index for this symbol!");
-	}
-
-	val_stack[val_idx] = expr_lablptr->pal;
-}
-int ib_sizeof(void) {
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("SIZEOF"));
-
-	if (!ib_need_one_symbol("SIZEOF"))
-		return -1;
-
-	if (pass == LAST_PASS) {
-		if (expr_lablptr->data_type == -1) {
-			error("No size attributes for this symbol!");
-			return -1;
-		}
-	}
-
-	val_stack[val_idx] = expr_lablptr->data_size;
-	return 0;
-}
-int ib_square(void) {
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("SQUARE"));
-
-	val_stack[val_idx] *= val_stack[val_idx];
-	return 0;
-}
-
-int ib_defined(void) {
-	if (inbuilt_arg[func_idx] == 0)
-		return(ib_get_one_arg("DEFINED"));
-
-	if (!ib_need_one_symbol("DEFINED"))
-		return -1;
-
-	if (expr_lablptr->type != IFUNDEF && expr_lablptr->type != UNDEF)
-		val_stack[val_idx] = 1;
-	else {
-		val_stack[val_idx] = 0;
-		undef--;
-	}
-
-	return 0;
-}
-
 /* ----
  * evaluate()
  * ----
@@ -912,101 +707,6 @@ int do_op(void)
 		val[1] = val_stack[--val_idx];
 
 	switch (op) {
-	/* BANK */
-	case OP_BANK:
-		if (!check_func_args("BANK"))
-			return (0);
-		if (pass == LAST_PASS) {
-			if (expr_lablptr->bank == RESERVED_BANK) {
-				error("No BANK index for this symbol!");
-				val[0] = 0;
-				break;
-			}
-		}
-		val[0] = expr_lablptr->bank;
-		break;
-
-	/* PAGE */
-	case OP_PAGE:
-		if (expr_lablcnt > 1) {
-			error("Too many symbols in function PAGE!");
-			return (0);
-		}
-		else if (expr_lablcnt == 1) {
-			/* if a label has been supplied, get its page */
-			val[0] = expr_lablptr->page;
-		}
-		else {
-			/* otherwise shift value on the value stack right by 13 */
-			val[0] >>= 13;
-			if (val[0] > 7) {
-				error("Page index out of range!");
-				return (0);
-			}
-		}
-
-		break;
-
-	/* VRAM */
-	case OP_VRAM:
-		if (!check_func_args("VRAM"))
-			return (0);
-		if (pass == LAST_PASS) {
-			if (expr_lablptr->vram == -1)
-				error("No VRAM address for this symbol!");
-		}
-		val[0] = expr_lablptr->vram;
-		break;
-
-	/* PAL */
-	case OP_PAL:
-		if (!check_func_args("PAL"))
-			return (0);
-		if (pass == LAST_PASS) {
-			if (expr_lablptr->pal == -1)
-				error("No palette index for this symbol!");
-		}
-		val[0] = expr_lablptr->pal;
-		break;
-
-	/* DEFINED */
-	case OP_DEFINED:
-		if (!check_func_args("DEFINED"))
-			return (0);
-		if ((expr_lablptr->type != IFUNDEF) && (expr_lablptr->type != UNDEF))
-			val[0] = 1;
-		else {
-			val[0] = 0;
-			undef--;
-		}
-		break;
-
-	/* SIZEOF */
-	case OP_SIZEOF:
-		if (!check_func_args("SIZEOF"))
-			return (0);
-		if (pass == LAST_PASS) {
-			if (expr_lablptr->data_type == -1) {
-				error("No size attributes for this symbol!");
-				return (0);
-			}
-		}
-		val[0] = expr_lablptr->data_size;
-		break;
-
-	/* HIGH */
-	case OP_HIGH:
-		val[0] = (val[0] & 0xFF00) >> 8;
-		break;		
-
-	case OP_SQUARE:
-		val[0] = val[0] * val[0];
-		break;
-
-	/* LOW */
-	case OP_LOW:
-		val[0] = val[0] & 0xFF;
-		break;
 
 	case OP_ADD:
 		val[0] = val[1] + val[0];
@@ -1102,28 +802,210 @@ int do_op(void)
     return (1);
 }
 
-
-/* ----
- * check_func_args()
- * ----
- * check BANK/PAGE/VRAM/PAL function arguments
- */
-
-int
-check_func_args(char *func_name)
+int ib_get_one_arg(const char *name)
 {
-	char string[64];
-
-	if (expr_lablcnt == 1)
-		return (1);
-	else if (expr_lablcnt == 0)
-		sprintf(string, "No symbol in function %s!", func_name);
-	else {
-		sprintf(string, "Too many symbols in function %s!", func_name);
+	char buf[64];
+	/* argument checks */
+	if (func_argtype[func_idx - 1][0] == NO_ARG) {
+		sprintf(buf, "No argument for function %s", name);
+		error(buf);
+		return -1;
 	}
 
-	/* output message */
-	error(string);
-	return (0);
+	/* others must be empty */
+	for (int i = 1; i < FUNC_ARG_COUNT; i++) {
+		if (func_argtype[func_idx - 1][i] != NO_ARG) {
+			sprintf(buf, "Too many arguments for function %s", name);
+			error(buf);
+			return -1;
+		}
+	}
+
+	inbuilt_arg[func_idx]++;
+
+	return 1; /* get arg 1 */
 }
 
+int ib_need_one_symbol(const char *name) {
+	char buf[64];
+
+	if (!expr_lablptr || expr_lablcnt == 0) {
+		sprintf(buf, "No symbol specified for function %s", name);
+		error(buf);
+		return 0;
+	}
+	if (expr_lablcnt > 1) {
+		sprintf(buf, "Too many symbols for function %s", name);
+		error(buf);
+		return 0;
+	}
+
+	return 1;
+}
+
+/*
+return values for inbuilts:
+0: OK, got value
+1 - 9: Need arg #1 - 9 (go back, parse it and push it on the stack)
+-1 error
+ */
+int ib_high(void)
+{
+	/* inbuilt_arg is a pseudo-sate variable */
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("HIGH"));		/* must get back to parsing one */
+
+	/* all arguments are present */
+	val_stack[val_idx] = (val_stack[val_idx] & 0xFF00) >> 8;
+	return 0;
+}
+
+int ib_low(void)
+{
+	/* inbuilt_arg is a pseudo-sate variable */
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("LOW"));		/* must get back to parsing one */
+
+	/* all arguments are present */
+	val_stack[val_idx] &= 0xFF;
+	return 0;
+}
+
+int ib_bank(void)
+{
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("BANK"));
+
+	if (!ib_need_one_symbol("BANK"))
+		return -1;
+
+	if (pass == LAST_PASS && expr_lablptr->bank == RESERVED_BANK)
+		error("No BANK index for this symbol!");
+
+	val_stack[val_idx] = expr_lablptr->bank;
+	return 0;
+}
+
+int ib_pow(void)
+{
+	if (inbuilt_arg[func_idx] == 0) {
+		char buf[64];
+		/* argument checks */
+		if (func_argtype[func_idx - 1][0] == NO_ARG || func_argtype[func_idx - 1][1] == NO_ARG) {
+			error("Missing Argument for function POW");
+			return -1;
+		}
+
+		/* others must be empty */
+		for (int i = 2; i < FUNC_ARG_COUNT; i++) {
+			if (func_argtype[func_idx - 1][i] != NO_ARG) {
+				sprintf(buf, "Too many arguments for function POW");
+				error(buf);
+				return -1;
+			}
+		}
+
+		inbuilt_arg[func_idx]++;
+
+		return 1; /* get arg 1 */
+	}
+	else if (inbuilt_arg[func_idx] == 1) {
+		inbuilt_arg[func_idx]++;
+		return 2; /* get arg 2 */
+	}
+	else {
+		if (val_stack[val_idx] == 0)
+			val_stack[--val_idx] = 1;
+		else for (int exp = val_stack[val_idx--], base = val_stack[val_idx]; exp > 1; exp--)
+			val_stack[val_idx] *= base;
+		return 0;
+	}
+}
+
+int ib_page(void)
+{
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("PAGE"));
+
+	val_stack[val_idx] >>= 13;
+
+	if (val_stack[val_idx] > 7) {
+		error("Page index out of range!");
+		return -1;
+	}
+
+	return 0;
+}
+
+int ib_vram(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("VRAM"));
+
+	if (!ib_need_one_symbol("VRAM"))
+		return -1;
+
+	if (pass == LAST_PASS) {
+		if (expr_lablptr->vram == -1)
+			error("No palette index for this symbol!");
+	}
+
+	val_stack[val_idx] = expr_lablptr->vram;
+}
+
+int ib_pal(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("PAL"));
+
+	if (!ib_need_one_symbol("PAL"))
+		return -1;
+
+	if (pass == LAST_PASS) {
+		if (expr_lablptr->pal == -1)
+			error("No palette index for this symbol!");
+	}
+
+	val_stack[val_idx] = expr_lablptr->pal;
+}
+
+int ib_sizeof(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("SIZEOF"));
+
+	if (!ib_need_one_symbol("SIZEOF"))
+		return -1;
+
+	if (pass == LAST_PASS) {
+		if (expr_lablptr->data_type == -1) {
+			error("No size attributes for this symbol!");
+			return -1;
+		}
+	}
+
+	val_stack[val_idx] = expr_lablptr->data_size;
+	return 0;
+}
+
+int ib_square(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("SQUARE"));
+
+	val_stack[val_idx] *= val_stack[val_idx];
+	return 0;
+}
+
+int ib_defined(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("DEFINED"));
+
+	if (!ib_need_one_symbol("DEFINED"))
+		return -1;
+
+	if (expr_lablptr->type != IFUNDEF && expr_lablptr->type != UNDEF)
+		val_stack[val_idx] = 1;
+	else {
+		val_stack[val_idx] = 0;
+		undef--;
+	}
+
+	return 0;
+}

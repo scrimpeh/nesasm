@@ -57,7 +57,6 @@ int  push_val(int type);
 int  getsym(void);
 int  push_op(int op);
 int  do_op(void);
-int  check_func_args(char *func_name);
 
 int ib_get_one_arg(const char* name);
 int ib_need_one_symbol(const char *name);

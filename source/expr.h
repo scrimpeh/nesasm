@@ -28,15 +28,6 @@
 #define OP_LOWER_EQUAL	18
 #define OP_HIGHER		19
 #define OP_HIGHER_EQUAL	20
-#define OP_DEFINED	21
-#define OP_HIGH		22
-#define OP_LOW		23
-#define OP_PAGE		24
-#define OP_BANK		25
-#define OP_VRAM		26
-#define OP_PAL		27
-#define OP_SIZEOF	28
-#define OP_SQUARE   29
 
 /* operator priority */
 int op_pri[] = {
@@ -46,9 +37,6 @@ int op_pri[] = {
 	 1 /* OR    */,  2 /* XOR   */,  3 /* AND   */, 10 /* COM   */,
 	 9 /* NOT   */,  4 /* =     */,  4 /* <>    */,  5 /* <     */,
 	 5 /* <=    */,  5 /* >     */,  5 /* >=    */,
-	10 /* DEFIN.*/, 10 /* HIGH  */, 10 /* LOW   */, 10 /* PAGE  */,
-	10 /* BANK  */, 10 /* VRAM  */, 10 /* PAL   */, 10 /* SIZEOF*/,
-	10 /* SQUARE*/
 };
 
 unsigned int  op_stack[64] = { OP_START };	/* operator stack */
@@ -60,7 +48,6 @@ unsigned char *expr_stack[16];	/* expression stack */
 t_symbol *expr_lablptr;	/* pointer to the lastest label */
 t_inbuilt *expr_inbuilt[16] = { [0] = NULL };
 int inbuilt_arg[16];
-int arg_empty[16][10];
 /* NULL if the current expr is parsed normally, or the pointer to the inbuilt if it is handled by one */
 int expr_lablcnt;		/* number of labels seen in an expression */
 
