@@ -59,11 +59,20 @@ int  push_op(int op);
 int  do_op(void);
 int  check_func_args(char *func_name);
 
-/* inbuilt callbacks */
 int ib_get_one_arg(const char* name);
+int ib_need_one_symbol(const char *name);
+
+/* inbuilt callbacks */
 int ib_high(void);
 int ib_low(void);
 int ib_bank(void);
+int ib_page(void);
+int ib_defined(void);
+int ib_pal(void);
+int ib_vram(void);
+int ib_square(void);
+int ib_pow(void);
+int ib_sizeof(void);
 
 /* FUNC.C */
 void do_func(int *ip);

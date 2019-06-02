@@ -8,9 +8,9 @@
 #include "util/strcasecmp.h"
 
 
-int ib_get_one_arg(const char* name) 
+int ib_get_one_arg(const char *name) 
 {
-	char buf[32];
+	char buf[64];
 	/* argument checks */
 	if (func_argtype[func_idx - 1][0] == NO_ARG) {
 		sprintf(buf, "No argument for function %s", name);
@@ -30,6 +30,23 @@ int ib_get_one_arg(const char* name)
 	inbuilt_arg[func_idx]++;
 
 	return 1; /* get arg 1 */
+}
+
+int ib_need_one_symbol(const char *name) {
+	char buf[64];
+
+	if (!expr_lablptr || expr_lablcnt == 0) {
+		sprintf(buf, "No symbol specified for function %s", name);
+		error(buf);
+		return 0;
+	}
+	if (expr_lablcnt > 1) {
+		sprintf(buf, "Too many symbols for function %s", name);
+		error(buf);
+		return 0;
+	}
+
+	return 1;
 }
 
 /*
@@ -65,13 +82,97 @@ int ib_bank(void)
 	if (inbuilt_arg[func_idx] == 0)
 		return(ib_get_one_arg("BANK"));
 
-	if (!expr_lablptr) {
-		error("No symbol specified for function BANK!");
+	if (!ib_need_one_symbol("BANK"))
+		return -1;
+
+	if (pass == LAST_PASS && expr_lablptr->bank == RESERVED_BANK)
+		error("No BANK index for this symbol!");
+
+	val_stack[val_idx] = expr_lablptr->bank;
+	return 0;
+}
+
+int ib_page(void)
+{
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("PAGE"));
+
+	val_stack[val_idx] >>= 13;
+
+	if (val_stack[val_idx] > 7) {
+		error("Page index out of range!");
 		return -1;
 	}
 
-	/* all arguments are present */
-	val_stack[++val_idx] = expr_lablptr->bank;
+	return 0;
+}
+int ib_vram(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("VRAM"));
+
+	if (!ib_need_one_symbol("VRAM"))
+		return -1;
+
+	if (pass == LAST_PASS) {
+		if (expr_lablptr->vram == -1)
+			error("No palette index for this symbol!");
+	}
+
+	val_stack[val_idx] = expr_lablptr->vram;
+}
+int ib_pal(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("PAL"));
+
+	if (!ib_need_one_symbol("PAL"))
+		return -1;
+
+	if (pass == LAST_PASS) {
+		if (expr_lablptr->pal == -1)
+			error("No palette index for this symbol!");
+	}
+
+	val_stack[val_idx] = expr_lablptr->pal;
+}
+int ib_sizeof(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("SIZEOF"));
+
+	if (!ib_need_one_symbol("SIZEOF"))
+		return -1;
+
+	if (pass == LAST_PASS) {
+		if (expr_lablptr->data_type == -1) {
+			error("No size attributes for this symbol!");
+			return -1;
+		}
+	}
+
+	val_stack[val_idx] = expr_lablptr->data_size;
+	return 0;
+}
+int ib_square(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("SQUARE"));
+
+	val_stack[val_idx] *= val_stack[val_idx];
+	return 0;
+}
+
+int ib_defined(void) {
+	if (inbuilt_arg[func_idx] == 0)
+		return(ib_get_one_arg("DEFINED"));
+
+	if (!ib_need_one_symbol("DEFINED"))
+		return -1;
+
+	if (expr_lablptr->type != IFUNDEF && expr_lablptr->type != UNDEF)
+		val_stack[val_idx] = 1;
+	else {
+		val_stack[val_idx] = 0;
+		undef--;
+	}
+
 	return 0;
 }
 
@@ -160,56 +261,6 @@ cont:
 				expr = func_arg[func_idx - 2][status - 1];
 				continue;
 			}
-
-			///* first of all, pull 9 args from the argbuf and push them on the value stack */
-			///* there can be more flexibility later */
-			//if (inbuilt_arg[func_idx] < 9) {
-			//	arg_empty[inbuilt_arg[func_idx]][func_idx] = 1;
-			//	expr_stack[func_idx++] = expr;
-			//	expr = func_arg[func_idx - 2][inbuilt_arg[func_idx - 1]];
-			//
-			//	/* short circuit and test if an arg is empty */
-			//	char *la = expr;
-			//	while (*la++) {
-			//		if (!isspace(*la)) {
-			//			arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1] = 0;
-			//			break;
-			//		}
-			//	}
-			//	if (arg_empty[inbuilt_arg[func_idx - 1]][func_idx - 1]) {
-			//		val_idx++;
-			//	}
-			//	push_op(OP_START);
-			//	inbuilt_arg[func_idx - 1]++;
-			//
-			//	continue;
-			//}
-			//else {
-			//	/* all args gathered */
-			//	int op = expr_inbuilt[func_idx]->op_type;
-			//	expr_inbuilt[func_idx--] = NULL;
-			//	val_idx -= 8;
-			//	switch (op) {
-			//	default:
-			//		error("Cannot do this operation yet!");
-			//	case OP_HIGH:
-			//		val_stack[val_idx] &= 0xFF00;
-			//		val_stack[val_idx] >>= 8;
-			//		break;
-			//	case OP_LOW:
-			//		val_stack[val_idx] &= 0xFF;
-			//		break;
-			//	case OP_BANK:
-			//		if (!expr_lablptr) {
-			//			error("Undefined operand in BANK");
-			//			break;
-			//		}
-			//		val_stack[val_idx] = expr_lablptr->bank;
-			//		break;
-			//	}
-			//
-			//	need_operator = 1;
-			//}
 		}
 
 		c = *expr;
@@ -634,43 +685,10 @@ int push_val(int type)
 
 					inbuilt_arg[func_idx] = 0;
 
-					/* okay so basically, what we need to here is this: */
-					/* i think it'd be madness to have an inbuilt stack separate from the */
-					/* function stack -- since previously, an inbuilt could only sit at the */
-					/* top of the stack, we can probably share the stack */
-					
-					/* ok, the idea is the following */
-					/* inbuilt funcs should be treated as regular funcs as much as possible */
-					/* excpet, instead of parsing them (hard to do without source code) */
-					/* a flag for every level of expression tells the parser if it is looking at an */
-					/* inbuilt, and if so, which callback to invoke */
+					expr_lablptr = NULL;
+					expr_lablcnt = 0;
 
-					/* note that inbuilts must leave the value stack or the op stack as functions do */
-
-					/* inbuilts should preferrably have full control over the char array of arguments */
-					/* which can be parsed, or processed in another way that they please */
-
-					//op = ib->op_type;
-
-					/* extra setup for functions that send back symbol infos */
-					/*switch (op) {
-					case OP_DEFINED:
-					case OP_HIGH:
-					case OP_LOW:
-					case OP_PAGE:
-					case OP_BANK:
-					case OP_VRAM:
-					case OP_PAL:
-					case OP_SIZEOF:*/
-					if (ib->op == ib_bank) {
-						expr_lablptr = NULL;
-						expr_lablcnt = 0;
-					}
-					//	break;
-					//}
-					//skip_parens();
 					return 1;
-					//return push_op(op);
 				}
 			}
 		}
