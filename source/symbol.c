@@ -288,6 +288,12 @@ int labldef(int lval, int flag)
 				error("Symbol already used by a function!");
 				return -1;
 			}
+			if (ib->refcnt > 2) {
+				/* inbuilt has already been used - for normal symbols, this wouldn't be a problem */
+				/* here it is, though, because inbuilts are functions and this is a symbol */
+				fatal_error("Cannot hide reserved function %s, has already been used!", &ib->name[1]);
+				return -1;
+			}
 			ib->overridable = 2;			
 		}
 
