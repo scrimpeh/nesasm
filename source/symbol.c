@@ -174,7 +174,7 @@ int st_available(t_symbol *label, int type)
 		return 0;
 	}
 
-	if (label->overridable) {
+	if (label->overridable == 1) {
 		if (lablptr->refcnt > 1) {
 			/* reserved word has already been used */
 			fatal_error("Cannot hide reserved symbol %s, has already been used!", &label->name[1]);
@@ -298,8 +298,15 @@ int labldef(int lval, int flag)
 		}
 
 		/* as do reserved labels */
-		if (lablptr->overridable) {
-			lablptr->overridable = 0;
+		if (lablptr->overridable == 1) {
+			if ((lablptr->type == MACRO || lablptr->type == FUNC) && lablptr->refcnt > 1) {
+				/* label has already been used -- as long as there's no forward definitions of funcs and labels */
+				/* this oughta be sufficient */
+				/* TODO: add some overrridable inbuilt macros and funcs for testing */
+				fatal_error("Cannot hide reserved %s %s, has already been used!", st_get_name(lablptr->type, 0), &lablptr->name[1]);
+				return -1;
+			}
+			lablptr->overridable = 2;
 			lablptr->type = DEFABS;
 			lablptr->value = lval;
 		}
