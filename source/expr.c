@@ -427,7 +427,7 @@ int push_val(int type)
 
 	switch (type) {
 
-	/* char ascii value */
+		/* char ascii value */
 	case T_CHAR:
 		expr++;
 		val = *expr++;
@@ -438,7 +438,7 @@ int push_val(int type)
 		expr++;
 		break;
 
-	/* symbol or pc */
+		/* symbol or pc */
 	case T_PC:
 	case T_SYMBOL:
 		/* extract it */
@@ -454,7 +454,7 @@ int push_val(int type)
 		if (*la == '(') {
 			/* function or inbuilt */
 			if (func_look()) {
-				if(!func_getargs())
+				if (!func_getargs())
 					return 0;
 
 				expr_stack[func_idx++] = expr;
@@ -472,9 +472,7 @@ int push_val(int type)
 				}
 				else {
 					if (ib->overridable == 2) {
-						char errbuf[256];
-						sprintf(errbuf, "Function %s has been hidden by another symbol!", &ib->name[1]);
-						error(errbuf);
+						error("Function %s has been hidden by another symbol!", &ib->name[1]);
 						return 0;
 					}
 
@@ -497,10 +495,20 @@ int push_val(int type)
 		/* symbol */
 		/* search the symbol */
 		expr_lablptr = stlook(1);
+		t_inbuilt *ib = iblook(expr_lablptr->name);
 
 		/* check if undefined, if not get its value */
 		if (!expr_lablptr)
 			return 0;
+		else if (expr_lablptr->type == FUNC || expr_lablptr->type == MACRO) {
+			/* TODO: this technically is a compatibility break -- I think it should be reduced to a warning */
+			error("Cannot use %s type in expression!", st_get_name(expr_lablptr->type, 0));
+			return 0;
+		}
+		else if (ib = iblook(expr_lablptr->name) && ib->overridable != 2) {
+			error("Cannot use function type in expression");
+			return 0;
+		}
 		else if (expr_lablptr->type == UNDEF)
 			undef++;
 		else if (expr_lablptr->type == IFUNDEF)
@@ -774,19 +782,16 @@ int do_op(void)
 
 int ib_get_one_arg(const char *name)
 {
-	char buf[64];
 	/* argument checks */
 	if (func_argtype[func_idx - 1][0] == NO_ARG) {
-		sprintf(buf, "No argument for function %s", name);
-		error(buf);
+		error("No argument for function %s", name);
 		return -1;
 	}
 
 	/* others must be empty */
 	for (int i = 1; i < FUNC_ARG_COUNT; i++) {
 		if (func_argtype[func_idx - 1][i] != NO_ARG) {
-			sprintf(buf, "Too many arguments for function %s", name);
-			error(buf);
+			error("Too many arguments for function %s", name);
 			return -1;
 		}
 	}
@@ -797,16 +802,12 @@ int ib_get_one_arg(const char *name)
 }
 
 int ib_need_one_symbol(const char *name) {
-	char buf[64];
-
 	if (!expr_lablptr || expr_lablcnt == 0) {
-		sprintf(buf, "No symbol specified for function %s", name);
-		error(buf);
+		error("No symbol specified for function %s", name);
 		return 0;
 	}
 	if (expr_lablcnt > 1) {
-		sprintf(buf, "Too many symbols for function %s", name);
-		error(buf);
+		error("Too many symbols for function %s", name);
 		return 0;
 	}
 
@@ -859,7 +860,6 @@ int ib_bank(void)
 int ib_pow(void)
 {
 	if (inbuilt_arg[func_idx] == 0) {
-		char buf[64];
 		/* argument checks */
 		if (func_argtype[func_idx - 1][0] == NO_ARG || func_argtype[func_idx - 1][1] == NO_ARG) {
 			error("Missing Argument for function POW");
@@ -869,8 +869,7 @@ int ib_pow(void)
 		/* others must be empty */
 		for (int i = 2; i < FUNC_ARG_COUNT; i++) {
 			if (func_argtype[func_idx - 1][i] != NO_ARG) {
-				sprintf(buf, "Too many arguments for function POW");
-				error(buf);
+				error("Too many arguments for function POW");
 				return -1;
 			}
 		}
