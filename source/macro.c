@@ -32,7 +32,7 @@ do_macro(int *ip)
 			error("Can not nest macro definitions!");
 			return;
 		}
-		if (lablptr == NULL) {
+		if (!lablptr ) {
 			/* skip spaces */
 			while (isspace(prlnbuf[*ip]))
 				(*ip)++;
@@ -44,26 +44,11 @@ do_macro(int *ip)
 			}
 
 			/* put the macro name in the symbol table */
-			if ((lablptr = stlook(1)) == NULL)
+			if (!(lablptr = stlook(1)))
 				return;
 		}
-		if (lablptr->overridable)
-			lablptr->overridable = 0;
-		else if (lablptr->refcnt) {
-			switch (lablptr->type) {
-			case MACRO:
-				fatal_error("Macro already defined!");
-				return;
-
-			case FUNC:
-				fatal_error("Symbol already used by a function!");
-				return;
-
-			default:
-				fatal_error("Symbol already used by a label!");
-				return;
-			}
-		}
+		if (!st_available(lablptr, MACRO))
+			return;
 		if (!check_eol(ip))
 			return;
 
