@@ -117,9 +117,13 @@ void putbyte(int offset, int data);
 void putword(int offset, int data);
 void putbuffer(void *data, int size);
 void write_srec(char *fname, char *ext, int base);
-void error(char *stptr);
-void warning(char *stptr);
-void fatal_error(char *stptr);
+
+void vwarning(const char *stptr, va_list args);
+void verror(const char *stptr, va_list args);
+void vfatal_error(const char *stptr, va_list args);
+void error(const char *stptr, ...);
+void warning(const char *stptr, ...);
+void fatal_error(const char *stptr, ...);
 
 /* PCX.C */
 int  pcx_pack_8x8_tile(unsigned char *buffer, int x, int y);
@@ -149,4 +153,6 @@ void lablset(char *name, int val);
 void hlablset(char *name, int val);
 void lablremap(void);
 void funcdump(const char *name, const char *in_fname);
+const char *st_get_name(int type);
+int st_available(t_symbol *label, int type);
 

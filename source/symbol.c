@@ -157,6 +157,52 @@ struct t_symbol *stlook(int flag)
 	return (sym);
 }
 
+const char *st_get_name(int type)
+{
+	if (type == MACRO)
+		return "macro";
+	else if (type == FUNC)
+		return "function";
+	else
+		return "label";
+}
+
+int st_available(t_symbol *label, int type)
+{
+	if (!label) {
+		error("No name for this %s!", st_get_name(type));
+		return 0;
+	}
+
+	if (label->overridable) {
+		if (lablptr->refcnt > 1) {
+			/* reserved word has already been used */
+			fatal_error("Cannot hide reserved symbol %s, has already been used!", &label->name[1]);
+			return 0;
+		}
+		lablptr->overridable = 2;
+	}
+	else if (label->refcnt) {
+		if (label->type == FUNC)
+			fatal_error("Function already defined!");
+		else
+			fatal_error("Symbol already used by a %s!", st_get_name(label->type));
+		return 0;
+	}
+
+	/* now test for an inbuilt */
+	t_inbuilt* ib = iblook(label->name);
+	if (ib) {
+		if (ib->overridable == 0) {
+			fatal_error("Symbol already used by a function!");
+			return 0;
+		}
+		ib->overridable = 2;
+	}
+	
+	/* ok */
+	return 1;
+}
 
 /* ----
  * stinstall()

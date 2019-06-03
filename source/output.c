@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include "defs.h"
 #include "externs.h"
 #include "protos.h"
@@ -346,43 +347,7 @@ write_srec(char *file, char *ext, int base)
 	printf("OK\n");
 }
 
-
-/* ----
- * fatal_error()
- * ----
- * stop compilation
- */
-
-void
-fatal_error(char *stptr)
-{
-	error(stptr);
-	stop_pass = 1;
-}
-
-
-/* ----
- * error()
- * ----
- * error printing routine
- */
-
-void
-error(char *stptr)
-{
-	warning(stptr);
-	errcnt++;
-}
-
-
-/* ----
- * warning()
- * ----
- * warning printing routine
- */
-
-void
-warning(char *stptr)
+void vwarning(const char *stptr, va_list args)
 {
 	int i, temp;
 
@@ -396,13 +361,68 @@ warning(char *stptr)
 
 	/* update the current file name */
 	if (infile_error != infile_num) {
-		infile_error  = infile_num;
+		infile_error = infile_num;
 		printf("#[%i]   %s\n", infile_num, input_file[infile_num].name);
 	}
 
 	/* output the line and the error message */
 	loadlc(loccnt, 0);
 	printf("%s\n", prlnbuf);
-	printf("       %s\n", stptr);
+	printf("       ");
+	vprintf(stptr, args);
+	printf("\n");
+}
+void verror(const char *stptr, va_list args)
+{
+	vwarning(stptr, args);
+	errcnt++;
+}
+void vfatal_error(const char *stptr, va_list args)
+{
+	verror(stptr, args);
+	stop_pass = 1;
+}
+
+
+
+/* ----
+ * fatal_error()
+ * ----
+ * stop compilation
+ */
+void fatal_error(const char *stptr, ...)
+{
+	va_list args;
+	va_start(args, stptr);
+	vfatal_error(stptr, args);
+	va_end(args);
+}
+
+
+/* ----
+ * error()
+ * ----
+ * error printing routine
+ */
+void error(const char *stptr, ...)
+{
+	va_list args;
+	va_start(args, stptr);
+	verror(stptr, args);
+	va_end(args);
+}
+
+
+/* ----
+ * warning()
+ * ----
+ * warning printing routine
+ */
+void warning(const char *stptr, ...)
+{
+	va_list args;
+	va_start(args, stptr);
+	vwarning(stptr, args);
+	va_end(args);
 }
 

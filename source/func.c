@@ -31,33 +31,9 @@ void do_func(int *ip)
 	if (pass == LAST_PASS)
 		println();
 	else {
-		/* error checking */
-		if (!lablptr) {
-			error("No name for this function!");
+		if (!st_available(lablptr, FUNC))
 			return;
-		}
-		if (lablptr->overridable) {
-			lablptr->overridable = 0;
-		}
-		else if (lablptr->refcnt) {
-			switch (lablptr->type) {
-			case MACRO:
-				fatal_error("Symbol already used by a macro!");
-				return;
-
-			case FUNC:
-				fatal_error("Function already defined!");
-				return;
-
-			default:
-				fatal_error("Symbol already used by a label!");
-				return;
-			}
-		}
-
-		/* install this new function in the hash table */
-		if (!func_install(*ip))
-			return;
+		func_install(*ip);
 	} 
 }
 
