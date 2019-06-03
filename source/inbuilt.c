@@ -46,6 +46,9 @@ t_inbuilt *iblook(const char *buf)
 		ib = ib->next;
 	}
 
+	if (ib)
+		ib->refcnt++;
+
 	return ib;
 }
 
@@ -70,6 +73,7 @@ void ibregister(char *name, int (*op)(void), int overridable)
 	ib->name[0] = strlen(name);
 	strcpy(&ib->name[1], name);
 	ib->overridable = overridable;
+	ib->refcnt = 0;
 
 	hash = symcasehash(ib->name);
 	ib->next = inbuilt_tbl[hash];

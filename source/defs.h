@@ -194,6 +194,7 @@ typedef struct t_inbuilt {
 	struct t_inbuilt *next;
 	int  overridable;	/* 0: not overridable, 1: overridable, 2: overridden */
 	int (*op)(void);
+	int refcnt;
 	char name[SBOLSZ];
 } t_inbuilt;
 

@@ -153,6 +153,6 @@ void lablset(char *name, int val);
 void hlablset(char *name, int val);
 void lablremap(void);
 void funcdump(const char *name, const char *in_fname);
-const char *st_get_name(int type);
+const char *st_get_name(int type, int uppercase);
 int st_available(t_symbol *label, int type);
 

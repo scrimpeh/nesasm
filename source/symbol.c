@@ -157,20 +157,20 @@ struct t_symbol *stlook(int flag)
 	return (sym);
 }
 
-const char *st_get_name(int type)
+const char *st_get_name(int type, int uppercase)
 {
 	if (type == MACRO)
-		return "macro";
+		return uppercase ? "Macro" : "macro";
 	else if (type == FUNC)
-		return "function";
+		return uppercase ? "Function" : "function";
 	else
-		return "label";
+		return uppercase ? "Label" : "label";
 }
 
 int st_available(t_symbol *label, int type)
 {
 	if (!label) {
-		error("No name for this %s!", st_get_name(type));
+		error("No name for this %s!", st_get_name(type, 0));
 		return 0;
 	}
 
@@ -183,10 +183,10 @@ int st_available(t_symbol *label, int type)
 		lablptr->overridable = 2;
 	}
 	else if (label->refcnt) {
-		if (label->type == FUNC)
-			fatal_error("Function already defined!");
+		if (label->type == type)
+			fatal_error("%s already defined!", st_get_name(label->type, 1));
 		else
-			fatal_error("Symbol already used by a %s!", st_get_name(label->type));
+			fatal_error("Symbol already used by a %s!", st_get_name(label->type, 0));
 		return 0;
 	}
 
@@ -195,6 +195,10 @@ int st_available(t_symbol *label, int type)
 	if (ib) {
 		if (ib->overridable == 0) {
 			fatal_error("Symbol already used by a function!");
+			return 0;
+		}
+		if (ib->refcnt > 2) {	/* 1 while searching the label earlier, 2 now */
+			fatal_error("Cannot hide reserved function %s, has already been used!", &ib->name[1]);
 			return 0;
 		}
 		ib->overridable = 2;
