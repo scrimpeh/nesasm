@@ -350,6 +350,7 @@ write_srec(char *file, char *ext, int base)
 void vwarning(const char *stptr, va_list args)
 {
 	int i, temp;
+	warncnt++;
 
 	/* put the source line number into prlnbuf */
 	i = 4;
@@ -372,18 +373,20 @@ void vwarning(const char *stptr, va_list args)
 	vprintf(stptr, args);
 	printf("\n");
 }
+
 void verror(const char *stptr, va_list args)
 {
+	int warncount_old = warncnt;	/* do not actually increment warning counter on error */
 	vwarning(stptr, args);
 	errcnt++;
+	warncnt = warncount_old;
 }
+
 void vfatal_error(const char *stptr, va_list args)
 {
 	verror(stptr, args);
 	stop_pass = 1;
 }
-
-
 
 /* ----
  * fatal_error()

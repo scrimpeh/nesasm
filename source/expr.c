@@ -500,10 +500,13 @@ int push_val(int type)
 		/* check if undefined, if not get its value */
 		if (!expr_lablptr)
 			return 0;
-		else if (expr_lablptr->type == FUNC || expr_lablptr->type == MACRO) {
+		else if (expr_lablptr->type == FUNC) {
 			/* TODO: this technically is a compatibility break -- I think it should be reduced to a warning */
-			error("Cannot use %s type in expression!", st_get_name(expr_lablptr->type, 0));
+			error("Cannot use function type in expression!");
 			return 0;
+		}
+		else if (expr_lablptr->type == MACRO && pass == LAST_PASS) {
+			warning("Using macro type in expression!");
 		}
 		else if (ib = iblook(expr_lablptr->name) && ib->overridable != 2) {
 			error("Cannot use function type in expression");
@@ -571,7 +574,7 @@ int push_val(int type)
 	/* check for too big expression */
 	if (val_idx == 63) {
 		error("Expression too complex!");
-		return (0);
+		return 0;
 	}
 
 	/* push the result on the value stack */
@@ -582,7 +585,7 @@ int push_val(int type)
 	need_operator = 1;
 
 	/* ok */
-	return (1);
+	return 1;
 }
 
 

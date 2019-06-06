@@ -531,11 +531,14 @@ main(int argc, char **argv)
 	/* GrP dump function addresses */
 	funcdump(fns_fname, in_fname);
 
-	if (errcnt != 0)
-		return (1);
+	printf("\nAssembly finished with %d %s and %d %s.\n", 
+		errcnt,  errcnt  != 1 ? "errors" : "error",
+		warncnt, warncnt != 1 ? "warnings" : "warning" );
 
-	/* ok */
-	return (0);
+	if (errcnt != 0)
+		return 1;
+
+	return 0;
 }
 
 

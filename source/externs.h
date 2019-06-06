@@ -74,6 +74,7 @@ extern struct t_inbuilt *inbuilt_tbl[256];	/* hash table for inbuilts */
 extern char hex[];		/* hexadecimal character buffer */
 extern int  stop_pass;	/* stop the program; set by fatal_error() */
 extern int  errcnt;		/* error counter */
+extern int  warncnt;	/* warning counter */
 extern void (*opproc)(int *);	/* instruction gen proc */
 extern int  opflg;		/* instruction flags */
 extern int  opval;		/* instruction value */
