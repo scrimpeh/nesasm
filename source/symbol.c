@@ -353,11 +353,13 @@ int labldef(int lval, int flag)
 
 	/* second pass */
 	else {
-		if ((lablptr->value != lval) ||
-		   ((flag) && (bank < bank_limit) && (lablptr->bank  != bank_base + bank)))
+		if ((lablptr->value != lval) || (flag && bank < bank_limit && lablptr->bank != bank_base + bank))
 		{
-			fatal_error("Internal error[1]!");
-			return (-1);
+			if (lablptr->type == UNDEF)
+				fatal_error("Label redefinition (Was undefined, is $%04X)", lval);
+			else 
+				fatal_error("Label redefinition (Was $%04X, is $%04X)", lablptr->value, lval);
+			return -1;
 		}
 	}
 

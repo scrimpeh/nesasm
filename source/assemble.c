@@ -235,7 +235,6 @@ assemble(void)
 	pc_ptr->page = page;
 }
 
-
 /* ----
  * oplook()
  * ----
@@ -244,9 +243,7 @@ assemble(void)
  * return -1 on syntax error
  * return -2 if no symbol
  */
-
-int
-oplook(int *idx)
+int oplook(int *idx)
 {
 	struct t_opcode *ptr;
 	char name[16];

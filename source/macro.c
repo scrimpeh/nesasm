@@ -20,9 +20,7 @@ struct t_macro *macro_tbl[256];
 struct t_macro *mptr;
 
 /* .macro pseudo */
-
-void
-do_macro(int *ip)
+void do_macro(int *ip)
 {
 	if (pass == LAST_PASS)
 		println();
@@ -60,9 +58,7 @@ do_macro(int *ip)
 }
 
 /* .endm pseudo */
-
-void
-do_endm(int *ip)
+void do_endm(int *ip)
 {
 	error("Unexpected ENDM!");
 	return;
@@ -309,7 +305,8 @@ macro_getargs(int ip)
 int macro_install(void)
 {
 	char c;
-	int hash = 0;
+	int hash = 0, casehash = 0;
+	t_opcode *inst;
 	int i;
 
 	t_inbuilt *ib = iblook(lablptr->name);
@@ -320,6 +317,19 @@ int macro_install(void)
 		}
 		ib->overridable = 2;
 	}
+
+	/* test if there's a name clash with an instruction or a directive */
+	casehash = symcasehash(lablptr->name);
+	inst = inst_tbl[casehash];
+	while (inst) {
+		if (!strcasecmp(&lablptr->name[1], inst->name))
+			break;
+		inst = inst->next;
+	}
+	if (inst) {
+		warning("Macro overrides %s %s!", inst->flag == PSEUDO ? "directive" : "instruction", inst->name);
+	}
+
 
 	/* mark the macro name as reserved */
 	lablptr->type = MACRO;
@@ -334,7 +344,7 @@ int macro_install(void)
 	for (i = 1; i <= symbol[0]; i++) {
 		c = symbol[i];
 		hash += c;
-		hash  = (hash << 3) + (hash >> 5) + c;
+		hash = (hash << 3) + (hash >> 5) + c;
 	}
 	hash &= 0xFF;
 
@@ -351,7 +361,6 @@ int macro_install(void)
 	macro_tbl[hash] = mptr;
 	mlptr = NULL;
 
-	/* ok */
 	return 1;
 }
 
