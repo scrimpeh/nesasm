@@ -10,14 +10,14 @@ This list is not complete. I'll add other stuff as I find it.
 
 #### Common Stuff
 
-People should know this already, but if they don't, here it is.
+People should know this already, but if you don't, here it is.
 
 * `*` returns the current location of the PC.
 * `lda <value` uses zero page addressing instead of absolute addressing.
 
 #### Addressing Modes
 
-* Indexed post-increment: `lda value,x++`, `lda value,y++`. Expands to `lda value` followed by `inx` or `iny` respectively. Why there's no post-decrement or pre-increment/decrement functions, I don't know.
+* Indexed post-increment: `lda value,x++`, `lda value,y++`. Expands to `lda value,x`/`lda value,y` followed by `inx` or `iny` respectively. Why there's no post-decrement or pre-increment/decrement functions, I don't know.
 * Tagged indirect addressing. `lda [ptr].offset`. Expands to `ldy #offset` followed by `lda [ptr],y`. 
 * Low and high addressing. `lda.L value` and `lda.H value`. Expand to `lda value` and `lda value+1` respectively.
 
@@ -51,5 +51,5 @@ People should know this already, but if they don't, here it is.
 
 * `*` as the first character of the line turns the line into a comment
 * Macro arguments can be enclosed in braces (`{...}`). Allows giving an argument containing a comma (`,`) without having it count as two arguments. Note that NESASM automatically turns indexed arguments (`value, x`) into a single argument instead of two, even without braces.
-* Inbuilt functions such as `HIGH` and `LOW` are case-insensitive, unlike regular functions.
+* Inbuilt functions such as `HIGH` and `LOW` are case-insensitive, unlike user-defined functions.
 * Hex literals in the form of `0x12AB` are supported in addition to the usual syntax (`$12AB`)
