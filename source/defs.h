@@ -145,6 +145,18 @@ typedef struct t_opcode {
 	int    flag;
 	int    value;
 	int    type_idx;
+
+	/* override settings */
+	/* 0: error on override
+	 * 1: warning on override, don't hide old symbol
+	 * 2: warning on override, hide old symbol
+	 * 3: no warning on override, don't hide old symbol
+	 * 4: no warning on override, hide old symbol
+	 * 5: symbol hidden, generate extra warnings
+	 * 6: symbol hidden, generate no warnings
+	 */
+	/* typically, 1 is used for original directives, while 4 is used for new directives */
+	int    overridable;
 } t_opcode;
 
 typedef struct t_input_info {

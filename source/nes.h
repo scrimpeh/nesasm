@@ -10,18 +10,18 @@ void nes_inesmir(int *ip);
 
 /* NES specific pseudos */
 struct t_opcode nes_pseudo[11] = {
-	{NULL,  "DEFCHR",  nes_defchr,  PSEUDO, P_DEFCHR,  0},
-	{NULL,  "INESPRG", nes_inesprg, PSEUDO, P_INESPRG, 0},
-	{NULL,  "INESCHR", nes_ineschr, PSEUDO, P_INESCHR, 0},
-	{NULL,  "INESMAP", nes_inesmap, PSEUDO, P_INESMAP, 0},
-	{NULL,  "INESMIR", nes_inesmir, PSEUDO, P_INESMIR, 0},
+	{NULL,  "DEFCHR",  nes_defchr,  PSEUDO, P_DEFCHR,  0, 1},
+	{NULL,  "INESPRG", nes_inesprg, PSEUDO, P_INESPRG, 0, 1},
+	{NULL,  "INESCHR", nes_ineschr, PSEUDO, P_INESCHR, 0, 1},
+	{NULL,  "INESMAP", nes_inesmap, PSEUDO, P_INESMAP, 0, 1},
+	{NULL,  "INESMIR", nes_inesmir, PSEUDO, P_INESMIR, 0, 1},
 
-	{NULL, ".DEFCHR",  nes_defchr,  PSEUDO, P_DEFCHR,  0},
-	{NULL, ".INESPRG", nes_inesprg, PSEUDO, P_INESPRG, 0},
-	{NULL, ".INESCHR", nes_ineschr, PSEUDO, P_INESCHR, 0},
-	{NULL, ".INESMAP", nes_inesmap, PSEUDO, P_INESMAP, 0},
-	{NULL, ".INESMIR", nes_inesmir, PSEUDO, P_INESMIR, 0},
-	{NULL, NULL, NULL, 0, 0, 0}
+	{NULL, ".DEFCHR",  nes_defchr,  PSEUDO, P_DEFCHR,  0, 1},
+	{NULL, ".INESPRG", nes_inesprg, PSEUDO, P_INESPRG, 0, 1},
+	{NULL, ".INESCHR", nes_ineschr, PSEUDO, P_INESCHR, 0, 1},
+	{NULL, ".INESMAP", nes_inesmap, PSEUDO, P_INESMAP, 0, 1},
+	{NULL, ".INESMIR", nes_inesmir, PSEUDO, P_INESMIR, 0, 1},
+	{NULL, NULL, NULL, 0, 0, 0, 0}
 };
 
 /* NES machine description */

@@ -263,21 +263,21 @@ int oplook(int *idx)
 		if (c == ' ' || c == '\t' || c == '\0' || c == ';')
 			break;
 		if (!isalnum(c) && c != '.' && c != '*' && c != '=')
-			return (-1);
+			return -1;
 		if (i == 15)
-			return (-1);
+			return -1;
 
 		/* handle instruction extension */
 		if (c == '.' && i) {
 			if (flag)
-				return (-1);
+				return -1;
 			flag = 1;
 			(*idx)++;
 			continue;
 		}
 		if (flag) {
 			if (opext)
-				return (-1);
+				return -1;
 			opext = c;
 			(*idx)++;
 			continue;
@@ -297,7 +297,7 @@ int oplook(int *idx)
 	/* check extension */
 	if (flag) {
 		if ((opext != 'L') && (opext != 'H'))
-			return (-1);
+			return -1;
 	}
 
 	/* end name string */
@@ -305,7 +305,7 @@ int oplook(int *idx)
 
 	/* return if no instruction */
 	if (i == 0)
-		return (-2);
+		return -2;
 
 	/* search the instruction in the hash table */
 	ptr = inst_tbl[hash & 0xFF];
@@ -320,18 +320,23 @@ int oplook(int *idx)
 			if (opext) {
 				/* no extension for pseudos */
 				if (opflg == PSEUDO)
-					return (-1);
+					return -1;
 				/* extension valid only for these addressing modes */
 				if (!(opflg & (IMM|ZP|ZP_X|ZP_IND_Y|ABS|ABS_X|ABS_Y)))
-					return (-1);
+					return -1;
 			}
-			return (i);			
+
+			if (ptr->overridable == 5 || ptr->overridable == 6) { /* instruction has been overriden */
+				fatal_error("%s has been overridden by macro!", ptr->flag == PSEUDO ? "Directive" : "Instruction");
+				return -1;
+			}
+			return i;			
 		}
 		ptr = ptr->next;
 	}
 
 	/* didn't find this instruction */
-	return (-1);
+	return -1;
 }
 
 
