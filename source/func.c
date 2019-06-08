@@ -9,11 +9,8 @@
 struct t_func *func_tbl[256];
 struct t_func *func_ptr;
 char func_line[FUNC_LENGTH];
-char func_arg[8][10][80];
+char func_arg[8][10][FUNC_ARG_LENGTH];
 int  func_argnum[8];
-/* I'm not sure if I need separate buffer space for all of these, but never hurts to make sure */
-char func_argnumbuf[8][2];
-char func_fcntbuf[8][6];
 int  func_argtype[8][10];
 int  func_idx;
 int  fcounter, fcntmax;
@@ -130,7 +127,6 @@ int func_extract(int ip)
 
 		/* function arg */
 		case '\\':
-		get_arg_type:
 			arg_valid = 0;
 		   *ptr++ = c;
 		    i++;
@@ -181,7 +177,7 @@ int func_extract(int ip)
 int func_getargs(void)
 {
 	char c, *cur_arg, *line;
-	int arg, level, space, read_cur_func_arg, empty_args, last_arg, arg_valid, arg_type;
+	int arg, level, space, read_cur_func_arg, empty_args, last_arg, arg_type;
 	int i, x;
 
 	/* can not nest too much macros */
@@ -206,8 +202,6 @@ int func_getargs(void)
 		func_arg[func_idx][i][0] = '\0';
 		func_argtype[func_idx][i] = NO_ARG;
 	}
-	func_fcntbuf[func_idx][0] = '\0';
-	func_argnumbuf[func_idx][0] = '\0';
 	func_argnum[func_idx] = 0;
 
 	fcntstack[func_idx] = fcntmax;
@@ -247,8 +241,6 @@ int func_getargs(void)
 
 		/* end of function */
 		case ')':
-			sprintf(func_argnumbuf[func_idx], "%1i", func_argnum[func_idx]);
-			sprintf(func_fcntbuf[func_idx], "%05i", fcntstack[func_idx]);
 			return 1;
 
 		/* arg */
@@ -306,24 +298,33 @@ int func_getargs(void)
 					/* read an argument from the current function */
 					if (func_idx == 0) {
 						error("Syntax error!");
-						return (0);
-					}
+						return 0;
+					}	
 					c = *expr++;
-					arg_valid = 0;
 					if (c == '#' || c == '@') {
-						arg_valid = 1;
-						line = c == '#' ? func_argnumbuf[func_idx - 1] : func_fcntbuf[func_idx - 1];
-					}
-					else if (c >= '1' && c <= '9') {
-						arg_valid = 1;
-						line = func_arg[func_idx - 1][c - '1'];
+						const int src = c == '#' ? func_argnum[func_idx - 1] : fcntstack[func_idx - 1];
+						i += snprintf(cur_arg + i, FUNC_ARG_LENGTH - i, "%d", src);
+						if (i >= FUNC_ARG_LENGTH) {
+							error("Function argument too long!");
+							return 0;
+						}
+						c = *expr++;
 					}
 					else if (c == '?') {
 						c = *expr++;
-						if (c >= '1' && c <= '9')
-							arg_valid = 1;
+						if (c < '1' || c > '9') {
+							error("Invalid function argument!");
+							return 0;
+						}
+						i += snprintf(cur_arg + i, FUNC_ARG_LENGTH - i, "%d", func_argtype[func_idx - 1][c - '1']);
+						if (i >= FUNC_ARG_LENGTH) {
+							error("Function argument too long!");
+							return 0;
+						}
+						c = *expr++;
 					}
-					if (arg_valid) {
+					else if (c >= '1' && c <= '9') {
+						line = func_arg[func_idx - 1][c - '1'];
 						read_cur_func_arg = 1;
 						c = *line++;
 					}
@@ -356,7 +357,7 @@ int func_getargs(void)
 				else {
 					cur_arg[i++] = c;
 				}
-				if (i == 80) {
+				if (i == FUNC_ARG_LENGTH) {
 					error("Invalid function argument length!");
 					return 0;
 				}

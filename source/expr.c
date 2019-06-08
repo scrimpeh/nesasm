@@ -124,17 +124,15 @@ cont:
 				}
 				expr++;
 				c = *expr++;
-				if (c == '#') {
-					/* get number of arguments */
-					expr_stack[func_idx++] = expr;
-					expr = func_argnumbuf[func_idx - 2];
+				if (c == '#') {	/* get number of arguments */
+					if (!push_val_stack(func_argnum[func_idx - 1]))
+						return 0;
 				}
-				else if (c == '@') {
-					/* get unique number for each function invocation */
-					expr_stack[func_idx++] = expr;
-					expr = func_fcntbuf[func_idx - 2];
+				else if (c == '@') { /* get unique number for each function invocation */
+					if (!push_val_stack(fcntstack[func_idx - 1]))
+						return 0;
 				} 
-				else if (c == '?') {
+				else if (c == '?') { /* get arg type */
 					c = *expr++;
 					if (c < '1' || c > '9') {
 						error("Invalid function argument index!");
@@ -144,7 +142,7 @@ cont:
 					if (!push_val_stack(func_argtype[func_idx - 1][c - '1']))
 						return 0;
 				}
-				else {
+				else { /* get arg */
 					if (c < '1' || c > '9') {
 						error("Invalid function argument index!");
 						return 0;
