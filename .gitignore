@@ -1,3 +1,6 @@
 *.o
 /nesasm
+/test/*
+!/test/*.asm
+!/test/test_padding.bin
 .DS_Store
