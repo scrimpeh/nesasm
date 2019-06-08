@@ -14,7 +14,6 @@ int  func_argnum[8];
 /* I'm not sure if I need separate buffer space for all of these, but never hurts to make sure */
 char func_argnumbuf[8][2];
 char func_fcntbuf[8][6];
-char func_argtypebuf[8][10][2];
 int  func_argtype[8][10];
 int  func_idx;
 int  fcounter, fcntmax;
@@ -206,7 +205,6 @@ int func_getargs(void)
 	for (i = 0; i < 9; i++) {
 		func_arg[func_idx][i][0] = '\0';
 		func_argtype[func_idx][i] = NO_ARG;
-		sprintf(func_argtypebuf[func_idx][i], "%1i", NO_ARG);
 	}
 	func_fcntbuf[func_idx][0] = '\0';
 	func_argnumbuf[func_idx][0] = '\0';
@@ -285,7 +283,6 @@ int func_getargs(void)
 				arg_type = (isdigit(c) || c == '$' || c == '%') ? ARG_ABS : ARG_LABEL; break;
 			}
 			func_argtype[func_idx][arg] = arg_type;
-			sprintf(func_argtypebuf[func_idx][arg], "%1i", arg_type);
 
 			for (;;) {
 				/* function end? */
@@ -323,10 +320,8 @@ int func_getargs(void)
 					}
 					else if (c == '?') {
 						c = *expr++;
-						if (c >= '1' && c <= '9') {
-							line = func_argtypebuf[func_idx - 1][c - '1'];
+						if (c >= '1' && c <= '9')
 							arg_valid = 1;
-						}
 					}
 					if (arg_valid) {
 						read_cur_func_arg = 1;

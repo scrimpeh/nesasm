@@ -138,12 +138,11 @@ cont:
 					c = *expr++;
 					if (c < '1' || c > '9') {
 						error("Invalid function argument index!");
-						return (0);
+						return 0;
 					}
 
-					arg = c - '1';
-					expr_stack[func_idx++] = expr;
-					expr = func_argtypebuf[func_idx - 2][arg];
+					if (!push_val_stack(func_argtype[func_idx - 1][c - '1']))
+						return 0;
 				}
 				else {
 					if (c < '1' || c > '9') {
@@ -411,6 +410,19 @@ error:
 }
 
 
+int push_val_stack(int value)
+{
+	if (val_idx == 63) {
+		error("Expression too complex!");
+		return 0;
+	}
+
+	val_stack[++val_idx] = value;
+	need_operator = 1;
+
+	return 1;
+}
+
 /* ----
  * push_val()
  * ----
@@ -571,21 +583,7 @@ int push_val(int type)
 		break;
 	}
 
-	/* check for too big expression */
-	if (val_idx == 63) {
-		error("Expression too complex!");
-		return 0;
-	}
-
-	/* push the result on the value stack */
-	val_idx++;
-	val_stack[val_idx] = val;
-
-	/* next must be an operator */
-	need_operator = 1;
-
-	/* ok */
-	return 1;
+	return push_val_stack(val);
 }
 
 

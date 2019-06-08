@@ -54,6 +54,7 @@ unsigned int crc_calc(unsigned char *data, int len);
 /* EXPR.C */
 int  evaluate(int *ip, char flag);
 int  push_val(int type);
+int  push_val_stack(int value);
 int  getsym(void);
 int  push_op(int op);
 int  do_op(void);
