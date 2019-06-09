@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "defs.h"
@@ -12,9 +13,91 @@ t_alias *alias_directives[256];
 t_alias *alias_instructions[256];
 t_alias *alias_inbuilts[256];
 
-t_alias *alias_look(const char *name, int type)
+t_alias *alias_look_table(t_alias **table, int hash, const char *name)
 {
+	t_alias *alias = table[hash];
+	while (alias) {
+		if (!strcmp(name, alias->name))
+			break;
+		alias = alias->next;
+	}
 
+	if (alias)
+		alias->refcnt++;
+
+	return alias;
+}
+
+t_alias *alias_look(const char *name, unsigned int type)
+{
+	const int hash = symhash(name);
+	t_alias* alias;
+
+	if (type & ALIAS_SYMBOL) {
+		if (alias = alias_look_table(alias_labels, hash, name))
+			return alias;
+	}
+	if (type & ALIAS_MACRO) {
+		if (alias = alias_look_table(alias_macros, hash, name))
+			return alias;
+	}
+	if (type & ALIAS_FUNC) {
+		if (alias = alias_look_table(alias_funcs, hash, name))
+			return alias;
+	}
+	if (type & ALIAS_DIRECTIVE) {
+		if (alias = alias_look_table(alias_directives, hash, name))
+			return alias;
+	}
+	if (type & ALIAS_INST) {
+		if (alias = alias_look_table(alias_instructions, hash, name))
+			return alias;
+	}
+	if (type & ALIAS_INBUILT) {
+		if (alias = alias_look_table(alias_inbuilts, hash, name))
+			return alias;
+	}
+
+	return NULL;
+}
+
+t_alias *alias_install(const char *name, void *shadowed, int hash, int type)
+{
+	t_alias **alias_table;
+	if (!name || !shadowed)
+		return NULL;
+	switch (type) {
+	default: return NULL;
+	case ALIAS_SYMBOL:    alias_table = alias_labels;       break;
+	case ALIAS_MACRO:     alias_table = alias_macros;       break;
+	case ALIAS_FUNC:      alias_table = alias_funcs;        break;
+	case ALIAS_DIRECTIVE: alias_table = alias_directives;   break;
+	case ALIAS_INST:      alias_table = alias_instructions; break;
+	case ALIAS_INBUILT:   alias_table = alias_inbuilts;     break;
+	}
+
+	t_alias *alias = malloc(sizeof(t_alias));
+	if (!alias) {
+		fatal_error("Out of memory!");
+		return NULL;
+	}
+
+	alias->type = type;
+	strcpy(alias->name, name);
+	alias->refcnt = 0;
+
+	switch (alias->type) {
+	case ALIAS_SYMBOL:    memcpy(&alias->sym, shadowed, sizeof(t_symbol));  break;
+	case ALIAS_MACRO:     memcpy(&alias->macro, shadowed, sizeof(t_macro)); break;
+	case ALIAS_FUNC:      memcpy(&alias->func, shadowed, sizeof(t_func));   break;
+	case ALIAS_DIRECTIVE: memcpy(&alias->op, shadowed, sizeof(t_opcode));   break;
+	case ALIAS_INST:      memcpy(&alias->op, shadowed, sizeof(t_opcode));   break;
+	case ALIAS_INBUILT:   memcpy(&alias->ib, shadowed, sizeof(t_inbuilt));  break;
+	}
+
+	t_alias *next = alias_table[hash];
+	alias->next = next;
+	alias_table[hash] = alias;
 }
 
 /* functionally, an alias is evaluated in the first pass and maps
@@ -67,16 +150,15 @@ void do_alias(int *ip)
 		if (sym->overridable != 2)
 		{
 			switch (sym->type) {
+			case ALIAS:
 			case MDEF:		/* todo: symbols may be changed internally */
 			case DEFABS:	/* aliases should reflect that */
 			case PC:
-				alias = stinstall(symhash(lablptr->name), 0);
-				alias->type = DEFABS;
-				alias->value = sym->value;
+				alias_install(lablptr->name, sym, symhash(lablptr->name), ALIAS_SYMBOL);
 				break;
 			}
 		}
 	}
 
-
+	lablptr->type = ALIAS;
 }

@@ -1,6 +1,9 @@
 
 /* ALIAS.C */
 void do_alias(int *ip);
+t_alias *alias_look_table(t_alias **table, int hash, const char *name);
+t_alias *alias_look(const char *name, unsigned int type);
+t_alias *alias_install(const char *name, void *shadowed, int hash, int type);
 
 /* ASSEMBLE.C */
 void assemble(void);
@@ -152,8 +155,8 @@ int symhash(const char *buf);
 int symcasehash(const char *buf);
 int colsym(int *ip);
 int get_identifier(char *target, int *ip);
-struct t_symbol *stlook(int flag);
-struct t_symbol *stinstall(int hash, int type);
+t_symbol *stlook(int create);
+t_symbol *stinstall(int hash, int type);
 int  labldef(int lval, int flag);
 void lablset(char *name, int val);
 void hlablset(char *name, int val);

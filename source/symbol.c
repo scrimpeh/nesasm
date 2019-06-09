@@ -115,9 +115,9 @@ int colsym(int *ip)
  * else, install symbol as undefined and return pointer
  */
 
-struct t_symbol *stlook(int flag)
+t_symbol *stlook(int create)
 {
-	struct t_symbol *sym;
+	t_symbol *sym;
 
 	int sym_flag = 0;
 	int hash;
@@ -135,8 +135,8 @@ struct t_symbol *stlook(int flag)
 			}
 
 			/* new symbol */
-			if (sym == NULL) {
-				if (flag) {
+			if (!sym) {
+				if (create) {
 					sym = stinstall(0, 1);
 					sym_flag = 1;
 				}
@@ -144,15 +144,20 @@ struct t_symbol *stlook(int flag)
 		}
 		else {
 			error("Local symbol not allowed here!");
-			return (NULL);
+			return NULL;
 		}
 	}
 
 	/* global symbol */
 	else {
-		/* search symbol */
 		hash = symhash(symbol);
-		sym  = hash_tbl[hash];
+		/* check aliases first */
+		t_alias *alias = alias_look(symbol, ALIAS_SYMBOL | ALIAS_FUNC | ALIAS_MACRO);
+		if (alias) 
+			return &alias->sym;
+
+		/* search symbol */
+		sym = hash_tbl[hash];
 		while (sym) {
 			if (!strcmp(symbol, sym->name))
 				break;			
@@ -160,8 +165,8 @@ struct t_symbol *stlook(int flag)
 		}
 
 		/* new symbol */
-		if (sym == NULL) {
-			if (flag) {
+		if (!sym) {
+			if (create) {
 				sym = stinstall(hash, 0);
 				sym_flag = 1;
 			}
@@ -174,8 +179,7 @@ struct t_symbol *stlook(int flag)
 			sym->refcnt++;
 	}
 
-	/* ok */
-	return (sym);
+	return sym;
 }
 
 const char *st_get_name(int type, int uppercase)
@@ -234,7 +238,6 @@ int st_available(t_symbol *label, int type)
  * ----
  * install symbol into symbol hash table
  */
-
 t_symbol *stinstall(int hash, int type)
 {
 	t_symbol *sym;

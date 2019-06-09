@@ -42,12 +42,12 @@
 #define S_DATA	3
 
 /* alias types */
-#define ALIAS_SYMBOL    0
-#define ALIAS_MACRO     1
-#define ALIAS_FUNC      2
-#define ALIAS_INST      3
-#define ALIAS_DIRECTIVE 4
-#define ALIAS_INBUILT   5
+#define ALIAS_SYMBOL    1
+#define ALIAS_MACRO     2
+#define ALIAS_FUNC      4
+#define ALIAS_INST      8
+#define ALIAS_DIRECTIVE 16
+#define ALIAS_INBUILT   32
 
 /* assembler options */
 #define OPT_LIST	 0
@@ -116,6 +116,7 @@
 #define MACRO	5	/* used for a macro name */
 #define FUNC	6	/* used for a function */
 #define PC      7	/* special symbol for the PC */
+#define ALIAS   8   /* alias */
 
 /* operation code flags */
 #define PSEUDO		0x0008000
@@ -273,11 +274,11 @@ typedef struct t_alias {
 	struct t_alias *next;
 	int type;
 	union {
-		t_symbol *sym;
-		t_func *func;
-		t_macro *macro;
-		t_opcode *op;
-		t_inbuilt *ib;
+		t_symbol sym;
+		t_func func;
+		t_macro macro;
+		t_opcode op;
+		t_inbuilt ib;
 	};
 	int refcnt;
 	char name[SBOLSZ];

@@ -89,4 +89,9 @@ extern int  xlist;		/* listing file main flag */
 extern int  list_level;	/* output level */
 extern int  asm_opt[8];	/* assembler option state */
 extern int  opvaltab[6][16];
-
+extern t_alias *alias_labels[256];
+extern t_alias *alias_macros[256];
+extern t_alias *alias_funcs[256];
+extern t_alias *alias_directives[256];
+extern t_alias *alias_instructions[256];
+extern t_alias *alias_inbuilts[256];
