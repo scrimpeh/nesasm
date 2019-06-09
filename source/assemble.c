@@ -383,6 +383,57 @@ addinst(struct t_opcode *optbl)
 	}
 }
 
+/* Override an instruction with another symbol, typically a macro */
+void inst_hide(int type, t_opcode *inst)
+{
+	const char *name = st_get_name(type, 1);
+	const char *inst_type = inst->flag == PSEUDO ? "directive" : "instruction";
+
+	/* can the symbol be overridden? */
+	switch (inst->overridable) {
+	case 0:	/* not overridable */
+		fatal_error("%s overrides %s %s!", name, inst_type, inst->name);
+		return 0;
+	case 1: /* generate warnings */
+	case 2:
+	case 5:
+		warning("%s overrides %s %s!", name, inst_type, inst->name);
+	}
+
+	/* hide old instruction? */
+	int hide_dot_symbol = 0;
+	switch (inst->overridable) {
+	case 2:
+		hide_dot_symbol = 2;
+		inst->overridable = 5;
+		break;
+	case 4:
+		hide_dot_symbol = 4;
+		inst->overridable = 6;
+		break;
+	}
+
+	/* does the instruction have a corresponding instruction with a leading dot */
+	/* e.g. db -> .db ? */
+	if (hide_dot_symbol) {
+		char buf[64];
+		buf[0] = lablptr->name[0] + 1;
+		buf[1] = '.';
+		for (int i = 1; i < lablptr->name[0] + 2; i++)
+			buf[i + 1] = lablptr->name[i];
+
+		const int dotcasehash = symcasehash(buf);
+		t_opcode *dot_inst = inst_tbl[dotcasehash];
+		while (dot_inst) {
+			if (!strcasecmp(&buf[1], dot_inst->name))
+				break;
+			dot_inst = dot_inst->next;
+		}
+
+		if (dot_inst && hide_dot_symbol != 0)
+			dot_inst->overridable = hide_dot_symbol;
+	}
+}
 
 /* ----
  * check_eol()

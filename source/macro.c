@@ -30,7 +30,7 @@ void do_macro(int *ip)
 			error("Can not nest macro definitions!");
 			return;
 		}
-		if (!lablptr ) {
+		if (!lablptr) {
 			/* skip spaces */
 			while (isspace(prlnbuf[*ip]))
 				(*ip)++;
@@ -65,7 +65,6 @@ void do_endm(int *ip)
 }
 
 /* search a macro in the hash table */
-
 struct t_macro *macro_look(int *ip)
 {
 	struct t_macro *ptr;
@@ -110,9 +109,7 @@ struct t_macro *macro_look(int *ip)
 }
 
 /* extract macro arguments */
-
-int
-macro_getargs(int ip)
+int macro_getargs(int ip)
 {
 	char *ptr;
 	char  c, t;
@@ -326,55 +323,8 @@ int macro_install(void)
 			break;
 		inst = inst->next;
 	}
-	if (inst) {
-		switch (inst->overridable) {
-		case 0:	/* not overridable */
-			fatal_error("Macro overrides %s %s!", inst->flag == PSEUDO ? "directive" : "instruction", inst->name);
-			return 0;
-		case 1: /* generate warnings */ 
-		case 2: 
-		case 5:
-			warning("Macro overrides %s %s!", inst->flag == PSEUDO ? "directive" : "instruction", inst->name);
-		}
-		
-		/* hide old instruction? */
-		int hide_dot_symbol = 0;
-		switch (inst->overridable) {
-		case 2: 
-			hide_dot_symbol = 2; 
-			inst->overridable = 5;	
-			break;
-		case 4: 
-			hide_dot_symbol = 4; 
-			inst->overridable = 6;  
-			break;
-		}
-
-		if (hide_dot_symbol) {
-			char buf[64];
-			buf[0] = lablptr->name[0] + 1;
-			buf[1] = '.';
-			for (int i = 1; i < lablptr->name[0] + 2; i++)
-				buf[i + 1] = lablptr->name[i];
-			/* note that instructions and some directives don't necessarily have corresponding dot symbols */
-			const int dotcasehash = symcasehash(buf);
-			t_opcode *dot_inst = inst_tbl[dotcasehash];
-			while (dot_inst) {
-				if (!strcasecmp(&buf[1], dot_inst->name))
-					break;
-				dot_inst = dot_inst->next;
-			}
-
-			if (dot_inst) {
-				switch (hide_dot_symbol) {
-				case 2: dot_inst->overridable = 5; break;
-				case 4: dot_inst->overridable = 6; break;
-				}
-			}
-		}
-
-	}
-
+	if (inst)
+		inst_hide(MACRO, inst);
 
 	/* mark the macro name as reserved */
 	lablptr->type = MACRO;

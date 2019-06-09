@@ -11,6 +11,7 @@ void do_if(int *ip);
 void do_else(int *ip);
 void do_endif(int *ip);
 void do_ifdef(int *ip);
+void inst_hide(int type, t_opcode *inst);
 
 /* CODE.C */
 void class1(int *ip);
