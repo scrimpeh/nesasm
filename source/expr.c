@@ -511,12 +511,28 @@ int push_val(int type)
 		if (!expr_lablptr)
 			return 0;
 		else if (expr_lablptr->type == FUNC) {
-			/* TODO: this technically is a compatibility break -- I think it should be reduced to a warning */
-			error("Cannot use function type in expression!");
+			error("CFunction has no arguments!");
 			return 0;
 		}
 		else if (expr_lablptr->type == MACRO && pass == LAST_PASS) {
 			warning("Using macro type in expression!");
+		}
+		else if (expr_lablptr->type == ALIAS) {
+			t_alias *alias = alias_look(expr_lablptr->name, ALIAS_ANY);
+			if (alias) {
+				switch (alias->type) {
+				case ALIAS_SYMBOL: break;
+				case ALIAS_MACRO:
+					if (pass == LAST_PASS)
+						warning("Using macro type in expression!");
+					break;
+				case ALIAS_DIRECTIVE: error("Cannot use directive in expression!"); return 0;
+				case ALIAS_INST: error("Cannot use instruction in expression!"); return 0;
+				case ALIAS_INBUILT:
+				case ALIAS_FUNC: error("Function has no arguments!"); return 0;
+				default: error("Unknown symbol!"); return 0;
+				}
+			}
 		}
 		else if (ib = iblook(expr_lablptr->name) && ib->overridable != 2) {
 			error("Cannot use function type in expression");

@@ -14,6 +14,11 @@
 
 t_inbuilt *iblook(const char *buf)
 {
+	t_alias *alias = alias_look(buf, ALIAS_INBUILT);
+	if (alias) {
+		return &alias->ib;
+	}
+
 	/* search symbol */
 	int hash = symcasehash(buf);
 	t_inbuilt* ib;

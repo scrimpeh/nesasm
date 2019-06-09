@@ -46,7 +46,7 @@ assemble(void)
 			i++;
 		if (pass == LAST_PASS)
 			println();
-		if (oplook(&i) >= 0) {
+		if (oplook(&i, NULL) >= 0) {
 			if (opflg == PSEUDO) {
 				if (opval == P_MACRO) {
 					error("Can not nest macro definitions!");
@@ -87,7 +87,7 @@ assemble(void)
 		i = SFIELD;
 		while (isspace(prlnbuf[i]))
 			i++;
-		if (oplook(&i) >= 0) {
+		if (oplook(&i, NULL) >= 0) {
 			if (opflg == PSEUDO) {
 				switch (opval) {
 				case P_IF:			// .if
@@ -195,7 +195,7 @@ assemble(void)
 
 	/* an instruction then */
 	ip = i;
-	flag = oplook(&ip);
+	flag = oplook(&ip, NULL);
 	if (flag < 0) {
 		labldef(loccnt, 1);
 		if ((flag == -1))
@@ -243,28 +243,27 @@ assemble(void)
  * return -1 on syntax error
  * return -2 if no symbol
  */
-int oplook(int *idx)
+int oplook(int *idx, t_opcode **ret)
 {
 	struct t_opcode *ptr;
-	char name[16];
-	char c;
-	int flag;
-	int hash;
-	int	i;
+	char name[64];
+	char text[65];
+	char c, t;
+	int flag = 0;
+	int casehash = 0;
+	int	i = 0;
 
 	/* get instruction name */
-	i = 0;
 	opext = 0;
-	flag = 0;
-	hash = 0;
 
 	for (;;) {
+		t = prlnbuf[*idx];
 		c = toupper(prlnbuf[*idx]);
 		if (c == ' ' || c == '\t' || c == '\0' || c == ';')
 			break;
-		if (!isalnum(c) && c != '.' && c != '*' && c != '=')
+		if (!isalnum(c) && c != '_' && c != '.' && c != '*' && c != '=')
 			return -1;
-		if (i == 15)
+		if (i == 63)
 			return -1;
 
 		/* handle instruction extension */
@@ -285,8 +284,10 @@ int oplook(int *idx)
 
 		/* store char */
 		name[i++] = c;
-		hash += c;
-		hash  = (hash << 3) + (hash >> 5) + c;
+		text[i] = t;
+		casehash += c;
+		casehash = (casehash << 3) + (casehash >> 5) + c;
+
 		(*idx)++;
 
 		/* break if '=' directive */
@@ -302,16 +303,25 @@ int oplook(int *idx)
 
 	/* end name string */
 	name[i] = '\0';
+	text[0] = i;
+	text[i + 1] = '\0';
 
 	/* return if no instruction */
 	if (i == 0)
 		return -2;
 
+	t_alias* alias = alias_look(text, ALIAS_INST | ALIAS_DIRECTIVE);
+	if (alias) {
+		ptr = &alias->op;
+		goto foundop;
+	}
+
 	/* search the instruction in the hash table */
-	ptr = inst_tbl[hash & 0xFF];
+	ptr = inst_tbl[casehash & 0xFF];
 
 	while (ptr) {
 		if (!strcmp(name, ptr->name)) {
+foundop:
 			opproc = ptr->proc;
 			opflg  = ptr->flag;
 			opval  = ptr->value;
@@ -330,6 +340,8 @@ int oplook(int *idx)
 				fatal_error("%s has been overridden by macro!", ptr->flag == PSEUDO ? "Directive" : "Instruction");
 				return -1;
 			}
+			if (ret)
+				*ret = ptr;
 			return i;			
 		}
 		ptr = ptr->next;

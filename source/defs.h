@@ -48,6 +48,8 @@
 #define ALIAS_INST      8
 #define ALIAS_DIRECTIVE 16
 #define ALIAS_INBUILT   32
+#define ALIAS_ANY       \
+	(ALIAS_SYMBOL | ALIAS_MACRO | ALIAS_FUNC | ALIAS_INST | ALIAS_DIRECTIVE | ALIAS_INBUILT)
 
 /* assembler options */
 #define OPT_LIST	 0

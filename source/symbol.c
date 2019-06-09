@@ -113,8 +113,9 @@ int colsym(int *ip)
  * symbol table lookup
  * if found, return pointer to symbol
  * else, install symbol as undefined and return pointer
+ * 
+ * create: nonzero, if a new symbol should be created and marked as UNDEFINED, 0 otherwise
  */
-
 t_symbol *stlook(int create)
 {
 	t_symbol *sym;
@@ -143,7 +144,8 @@ t_symbol *stlook(int create)
 			}
 		}
 		else {
-			error("Local symbol not allowed here!");
+			if (create)
+				error("Local symbol not allowed here!");
 			return NULL;
 		}
 	}
@@ -189,8 +191,22 @@ const char *st_get_name(int type, int uppercase)
 		return uppercase ? "Macro" : "macro";
 	else if (type == FUNC)
 		return uppercase ? "Function" : "function";
+	else if (type == ALIAS)
+		return uppercase ? "Alias" : "alias";
 	else
 		return uppercase ? "Label" : "label";
+}
+
+const char *st_get_name_plus_indefinite_article(int type)
+{
+	if (type == MACRO)
+		return "a macro";
+	else if (type == FUNC)
+		return "a function";
+	else if (type == ALIAS)
+		return "an alias";
+	else
+		return "a label";
 }
 
 int st_available(t_symbol *label, int type)
@@ -212,7 +228,7 @@ int st_available(t_symbol *label, int type)
 		if (label->type == type)
 			fatal_error("%s already defined!", st_get_name(label->type, 1));
 		else
-			fatal_error("Symbol already used by a %s!", st_get_name(label->type, 0));
+			fatal_error("Symbol already used by %s!", st_get_name_plus_indefinite_article(label->type));
 		return 0;
 	}
 

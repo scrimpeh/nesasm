@@ -7,8 +7,8 @@ t_alias *alias_install(const char *name, void *shadowed, int type);
 
 /* ASSEMBLE.C */
 void assemble(void);
-int  oplook(int *idx);
-void addinst(struct t_opcode *optbl);
+int oplook(int *idx, t_opcode **ret);
+void addinst(t_opcode *optbl);
 int  check_eol(int *ip);
 void do_if(int *ip);
 void do_else(int *ip);
@@ -163,5 +163,6 @@ void hlablset(char *name, int val);
 void lablremap(void);
 void funcdump(const char *name, const char *in_fname);
 const char *st_get_name(int type, int uppercase);
+const char *st_get_name_plus_indefinite_article(int type);
 int st_available(t_symbol *label, int type);
 

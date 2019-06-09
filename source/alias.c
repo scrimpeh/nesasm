@@ -119,7 +119,7 @@ void do_alias(int *ip)
 
 	while (isspace(prlnbuf[*ip]))
 		(*ip)++;
-	int ip_old = *ip;
+	const int ip_old = *ip;
 	char target[SBOLSZ];
 
 	if (!get_identifier(target, ip)) {
@@ -135,8 +135,8 @@ void do_alias(int *ip)
 	}
 
 	if (strchr(&symbol[1], '.')) {
-		fatal_error("Invalid alias name!");
-		return;
+		error("Invalid alias name!");
+		return 0;
 	}
 
 	if (!check_eol(ip))
@@ -144,8 +144,6 @@ void do_alias(int *ip)
 
 	/* now try to find out what we're aliasing */
 	/* first, symbols are checked, then instructions/directives */
-	
-
 	memcpy(symbol, target, SBOLSZ); 	/* gotta love that global state */
 	
 	t_symbol *sym = stlook(0);
@@ -170,9 +168,36 @@ void do_alias(int *ip)
 		goto end;
 	}
 
-	t_macro *macro = macro_look(&ip_old);
+	int ip_macro = ip_old;
+	t_macro *macro = macro_look(&ip_macro);
 	if (macro) {
 		alias_install(lablptr->name, macro, ALIAS_MACRO);
+		goto end;
+	}
+
+	int ip_op = ip_old;
+	t_opcode *op;
+	if (oplook(&ip_old, &op) > 0) {
+		if (op->flag == PSEUDO) {
+			/* also add the dot-directive */
+			/* i am really not a big fan of this */
+			/* but you can't have an alias start with a . , otherwise it would count as a local */
+			/* symbol -- and I don't want local aliases */
+			char dot_directive[32];
+			dot_directive[0] = lablptr->name[0] + 1;
+			dot_directive[1] = '.';
+			strcpy(&dot_directive[2], &lablptr->name[1]);
+			alias_install(dot_directive, op, ALIAS_DIRECTIVE);
+		}
+
+		alias_install(lablptr->name, op, op->flag == PSEUDO ? ALIAS_DIRECTIVE : ALIAS_INST);
+		goto end;
+	}
+
+	t_inbuilt *ib = iblook(symbol);
+	if (ib) {
+		ib->refcnt--;
+		alias_install(lablptr->name, ib, ALIAS_INBUILT);
 		goto end;
 	}
 
