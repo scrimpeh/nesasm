@@ -89,12 +89,28 @@ t_alias *alias_install(const char *name, void *shadowed, int type)
 	alias->refcnt = 0;
 
 	switch (alias->type) {
-	case ALIAS_SYMBOL:    memcpy(&alias->sym, shadowed, sizeof(t_symbol));  break;
-	case ALIAS_MACRO:     memcpy(&alias->macro, shadowed, sizeof(t_macro)); break;
-	case ALIAS_FUNC:      memcpy(&alias->func, shadowed, sizeof(t_func));   break;
-	case ALIAS_DIRECTIVE: memcpy(&alias->op, shadowed, sizeof(t_opcode));   break;
-	case ALIAS_INST:      memcpy(&alias->op, shadowed, sizeof(t_opcode));   break;
-	case ALIAS_INBUILT:   memcpy(&alias->ib, shadowed, sizeof(t_inbuilt));  break;
+	case ALIAS_SYMBOL:   
+		memcpy(&alias->sym, shadowed, sizeof(t_symbol));  
+		alias->sym.overridable = 0;
+		break;
+	case ALIAS_MACRO:     
+		memcpy(&alias->macro, shadowed, sizeof(t_macro)); 
+		break;
+	case ALIAS_FUNC:      
+		memcpy(&alias->func, shadowed, sizeof(t_func));   
+		break;
+	case ALIAS_DIRECTIVE: 
+		memcpy(&alias->op, shadowed, sizeof(t_opcode));
+		alias->op.overridable = 0;
+		break;
+	case ALIAS_INST:     
+		memcpy(&alias->op, shadowed, sizeof(t_opcode));   
+		alias->op.overridable = 0;
+		break;
+	case ALIAS_INBUILT:   
+		memcpy(&alias->ib, shadowed, sizeof(t_inbuilt));  
+		alias->ib.overridable = 0;
+		break;
 	}
 
 	t_alias *next = alias_table[hash];
