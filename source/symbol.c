@@ -152,9 +152,10 @@ t_symbol *stlook(int create)
 	else {
 		hash = symhash(symbol);
 		/* check aliases first */
-		t_alias *alias = alias_look(symbol, ALIAS_SYMBOL | ALIAS_FUNC | ALIAS_MACRO);
+		t_alias *alias = alias_look(symbol, ALIAS_SYMBOL);
 		if (alias) 
 			return &alias->sym;
+	
 
 		/* search symbol */
 		sym = hash_tbl[hash];

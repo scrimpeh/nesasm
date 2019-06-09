@@ -61,11 +61,13 @@ t_alias *alias_look(const char *name, unsigned int type)
 	return NULL;
 }
 
-t_alias *alias_install(const char *name, void *shadowed, int hash, int type)
+t_alias *alias_install(const char *name, void *shadowed, int type)
 {
 	t_alias **alias_table;
 	if (!name || !shadowed)
 		return NULL;
+	int hash = symhash(name);
+
 	switch (type) {
 	default: return NULL;
 	case ALIAS_SYMBOL:    alias_table = alias_labels;       break;
@@ -117,6 +119,7 @@ void do_alias(int *ip)
 
 	while (isspace(prlnbuf[*ip]))
 		(*ip)++;
+	int ip_old = *ip;
 	char target[SBOLSZ];
 
 	if (!get_identifier(target, ip)) {
@@ -142,23 +145,39 @@ void do_alias(int *ip)
 	/* now try to find out what we're aliasing */
 	/* first, symbols are checked, then instructions/directives */
 	
+
 	memcpy(symbol, target, SBOLSZ); 	/* gotta love that global state */
-	t_symbol *alias, *sym = stlook(0);
-	memcpy(symbol, lablptr->name, SBOLSZ);
+	
+	t_symbol *sym = stlook(0);
 	if (sym) {
 		sym->refcnt--;					/* don't actually want to reference the symbol */
-		if (sym->overridable != 2)
-		{
-			switch (sym->type) {
-			case ALIAS:
-			case MDEF:		/* todo: symbols may be changed internally */
-			case DEFABS:	/* aliases should reflect that */
-			case PC:
-				alias_install(lablptr->name, sym, symhash(lablptr->name), ALIAS_SYMBOL);
-				break;
-			}
+		if (sym == lablptr) {
+			error("Symbol cannot alias itself!");
+			goto end;
+		}
+		switch (sym->type) {
+		case MDEF:		/* todo: symbols may be changed internally */
+		case DEFABS:	/* aliases should reflect that (although really any symbol that can be changed should be a func anyway */
+		case PC:
+			alias_install(lablptr->name, sym, ALIAS_SYMBOL);
+			goto end;
 		}
 	}
 
+	t_func *func = func_look();
+	if (func) {
+		alias_install(lablptr->name, func, ALIAS_FUNC);
+		goto end;
+	}
+
+	t_macro *macro = macro_look(&ip_old);
+	if (macro) {
+		alias_install(lablptr->name, macro, ALIAS_MACRO);
+		goto end;
+	}
+
+	error("Undefined alias!");
+end:
+	memcpy(symbol, lablptr->name, SBOLSZ);
 	lablptr->type = ALIAS;
 }

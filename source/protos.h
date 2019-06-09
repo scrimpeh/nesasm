@@ -3,7 +3,7 @@
 void do_alias(int *ip);
 t_alias *alias_look_table(t_alias **table, int hash, const char *name);
 t_alias *alias_look(const char *name, unsigned int type);
-t_alias *alias_install(const char *name, void *shadowed, int hash, int type);
+t_alias *alias_install(const char *name, void *shadowed, int type);
 
 /* ASSEMBLE.C */
 void assemble(void);
@@ -82,7 +82,7 @@ int ib_sizeof(void);
 
 /* FUNC.C */
 void do_func(int *ip);
-int  func_look(void);
+t_func *func_look(void);
 int  func_install(int ip);
 int  func_extract(int ip);
 int  func_getargs(void);

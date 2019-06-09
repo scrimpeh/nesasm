@@ -67,14 +67,14 @@ void do_endm(int *ip)
 /* search a macro in the hash table */
 struct t_macro *macro_look(int *ip)
 {
-	struct t_macro *ptr;
-	char name[32];
+	t_macro *ptr;
+	char name[33];
 	char c;
 	int  hash;
 	int  l;
 
 	/* calculate the symbol hash value and check syntax */
-	l = 0;
+	l = 1;
 	hash = 0;
 	for (;;) {
 		c = prlnbuf[*ip];
@@ -86,26 +86,30 @@ struct t_macro *macro_look(int *ip)
 			if (isdigit(c))
 				return (NULL);
 		}
-		if (l == 31)
+		if (l == 32)
 			return (NULL);
 		name[l++] = c;
 		hash += c;
 		hash  = (hash << 3) + (hash >> 5) + c;
 		(*ip)++;
 	}
+	name[0] = l - 1;
 	name[l] = '\0';
 	hash &= 0xFF;
+
+	t_alias* alias = alias_look(name, ALIAS_MACRO);
+	if (alias)
+		return &alias->macro;
 
 	/* browse the hash table */
 	ptr = macro_tbl[hash];
 	while (ptr) {
-		if (!strcmp(name, ptr->name))
+		if (!strcmp(&name[1], ptr->name))
 			break;			
 		ptr = ptr->next;
 	}
 
-	/* return result */
-	return (ptr);
+	return ptr;
 }
 
 /* extract macro arguments */

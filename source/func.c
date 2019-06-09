@@ -34,12 +34,14 @@ void do_func(int *ip)
 }
 
 /* search a function */
-int func_look(void)
+t_func *func_look(void)
 {
-	int hash;
+	int hash = symhash(symbol);
+	t_alias* alias = alias_look(symbol, ALIAS_FUNC);
+	if (alias)
+		return &alias->func;
 
 	/* search the function in the hash table */
-	hash = symhash(symbol);
 	func_ptr = func_tbl[hash];
 	while (func_ptr) {
 		if (!strcmp(&symbol[1], func_ptr->name))
@@ -47,12 +49,7 @@ int func_look(void)
 		func_ptr = func_ptr->next;
 	}
 
-	/* ok */
-	if (func_ptr)
-		return 1;
-
-	/* didn't find a function with this name */
-	return 0;
+	return func_ptr;
 }
 
 /* install a function in the hash table */
@@ -82,7 +79,7 @@ int func_install(int ip)
 		return 0;
 
 	/* allocate a new func struct */
-	if ((func_ptr = (void *)malloc(sizeof(struct t_func))) == NULL) {
+	if (!(func_ptr = malloc(sizeof(struct t_func)))) {
 		error("Out of memory!");
 		return 0;
 	}
