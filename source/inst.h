@@ -61,9 +61,10 @@ struct t_opcode base_inst[57] = {
 };
 
 /* pseudo instruction table */
-struct t_opcode base_pseudo[77] = {
+struct t_opcode base_pseudo[79] = {
 	{NULL,  "=",       do_equ,     PSEUDO, P_EQU,     0, 1},
 
+	{NULL,	"ALIAS",   do_alias,   PSEUDO, P_ALIAS,   0, 4},
 	{NULL,  "BANK",    do_bank,    PSEUDO, P_BANK,    0, 1},
 	{NULL,  "BSS",     do_section, PSEUDO, P_BSS,     S_BSS, 1},
 	{NULL,  "BYTE",    do_db,      PSEUDO, P_DB,      0, 1},
@@ -103,6 +104,7 @@ struct t_opcode base_pseudo[77] = {
 	{NULL,  "WORD",    do_dw,      PSEUDO, P_DW,      0, 1},
 	{NULL,  "ZP",      do_section, PSEUDO, P_ZP,      S_ZP, 1},
 
+	{NULL, ".ALIAS",   do_alias,   PSEUDO, P_ALIAS,   0, 4},
 	{NULL, ".BANK",    do_bank,    PSEUDO, P_BANK,    0, 1},
 	{NULL, ".BSS",     do_section, PSEUDO, P_BSS,     S_BSS, 1},
 	{NULL, ".BYTE",    do_db,      PSEUDO, P_DB,      0, 1},

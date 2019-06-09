@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(NESASM)
 
 add_executable(${PROJECT_NAME} 
+	source/alias.c
 	source/assemble.c
 	source/code.c
 	source/command.c

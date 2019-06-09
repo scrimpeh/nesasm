@@ -1,4 +1,7 @@
 
+/* ALIAS.C */
+void do_alias(int *ip);
+
 /* ASSEMBLE.C */
 void assemble(void);
 int  oplook(int *idx);

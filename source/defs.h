@@ -98,6 +98,7 @@
 #define P_PGROUP	47	// .procgroup
 #define P_ENDPG		48	// .endprocgroup
 #define P_CALL		49	// .call
+#define P_ALIAS		50	// .alias
 
 /* symbol flags */
 #define UNDEF	1	/* undefined - may be zero page */
