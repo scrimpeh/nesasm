@@ -8,40 +8,48 @@
 
 
 /* ----
+ * symcasehash()
+ * ----
+ * calculate the case-insensitive hash value of a symbol
+ */
+int symcasehash(const char *buf)
+{
+	int hash = 0;
+	char c;
+
+	for (int i = 1; i <= buf[0]; i++) {
+		c = toupper(buf[i]);
+		hash += c;
+		hash = (hash << 3) + (hash >> 5) + c;
+	}
+
+	return hash & 0xFF;
+}
+
+/* ----
  * symhash()
  * ----
- * calculate the hash value of a symbol
+ * calculate the hash value of a symbol, must be 
+ * a length-indexed string
  */
-
-int
-symhash(void)
+int symhash(const char *buf)
 {
-	int i;
-	char c;
 	int hash = 0;
+	char c;
 
 	/* hash value */
-	for (i = 1; i <= symbol[0]; i++) {
-		c = symbol[i];
+	for (int i = 1; i <= buf[0]; i++) {
+		c = buf[i];
 		hash += c;
-		hash  = (hash << 3) + (hash >> 5) + c;
+		hash = (hash << 3) + (hash >> 5) + c;
 	}
 
 	/* ok */
-	return (hash & 0xFF);
+	return hash & 0xFF;
 }
 
-
-/* ----
- * colsym()
- * ----
- * collect a symbol from prlnbuf into symbol[],
- * leaves prlnbuf pointer at first invalid symbol character,
- * returns 0 if no symbol collected
- */
-
-int
-colsym(int *ip)
+/* target must hold at least SBOLSZ entries */
+int get_identifier(char *target, int *ip)
 {
 	int  err = 0;
 	int	 i = 0;
@@ -50,20 +58,33 @@ colsym(int *ip)
 	/* get the symbol */
 	for (;;) {
 		c = prlnbuf[*ip];
-		if (isdigit(c) && (i == 0))
+		if (isdigit(c) && i == 0)
 			break;
-		if ((!isalnum(c)) && (c != '_') && (c != '.'))
+		if (!isalnum(c) && c != '_' && c != '.')
 			break;
 		if (i < (SBOLSZ - 1))
-			symbol[++i] = c;
+			target[++i] = c;
 		(*ip)++;
 	}
 
-	symbol[0] = i;
-	symbol[i+1] = '\0';
+	target[0] = i;
+	target[i + 1] = '\0';
+}
+
+/* ----
+ * colsym()
+ * ----
+ * collect a symbol from prlnbuf into symbol[],
+ * leaves prlnbuf pointer at first invalid symbol character,
+ * returns 0 if no symbol collected
+ */
+int colsym(int *ip)
+{
+	int err = 0;
+	get_identifier(symbol, ip);
 
 	/* check if it's a reserved symbol */
-	if (i == 1) {
+	if (symbol[0] == 1) {
 		switch (toupper(symbol[1])) {
 		case 'A':
 		case 'X':
@@ -79,10 +100,10 @@ colsym(int *ip)
 
 	if (err) {
 		fatal_error("Reserved symbol!");
-		return (0);
+		return 0;
 	}	
 
-	return i;
+	return symbol[0];
 }
 
 
@@ -130,7 +151,7 @@ struct t_symbol *stlook(int flag)
 	/* global symbol */
 	else {
 		/* search symbol */
-		hash = symhash();
+		hash = symhash(symbol);
 		sym  = hash_tbl[hash];
 		while (sym) {
 			if (!strcmp(symbol, sym->name))
@@ -306,7 +327,7 @@ int labldef(int lval, int flag)
 				fatal_error("Cannot hide reserved %s %s, has already been used!", st_get_name(lablptr->type, 0), &lablptr->name[1]);
 				return -1;
 			}
-			lablptr->overridable = 2;
+			lablptr->overridable = 0;
 			lablptr->type = DEFABS;
 			lablptr->value = lval;
 		}

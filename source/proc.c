@@ -377,7 +377,7 @@ proc_look(void)
 	int hash;
 
 	/* search the procedure in the hash table */
-	hash = symhash();
+	hash = symhash(symbol);
 	ptr = proc_tbl[hash];
 	while (ptr) {
 		if (!strcmp(&symbol[1], ptr->name))
@@ -411,7 +411,7 @@ proc_install(void)
 
 	/* initialize it */
 	strcpy(ptr->name, &symbol[1]);
-	hash = symhash();
+	hash = symhash(symbol);
 	ptr->bank = (optype == P_PGROUP)  ? GROUP_BANK : PROC_BANK;
 	ptr->base = proc_ptr ? loccnt : 0;
 	ptr->org = ptr->base;

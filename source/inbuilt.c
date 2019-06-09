@@ -7,27 +7,6 @@
 
 
 /* ----
- * symcasehash()
- * ----
- * calculate the case-insensitive hash value of a symbol
- */
-
-int symcasehash(const char *buf)
-{
-	int i;
-	char c;
-	int hash = 0;
-
-	for (i = 1; i <= buf[0]; i++) {
-		c = toupper(buf[i]);
-		hash += c;
-		hash = (hash << 3) + (hash >> 5) + c;
-	}
-
-	return hash & 0xFF;
-}
-
-/* ----
  * iblook()
  * ----
  * search for an inbuilt in the table

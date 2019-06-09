@@ -85,7 +85,6 @@ int  func_extract(int ip);
 int  func_getargs(void);
 
 /* INBUILT.C */
-int symcasehash(const char *buf);
 t_inbuilt *iblook(const char *buf);
 void ibregister(char *name, int(*op)(void), int overridable);
 
@@ -149,8 +148,10 @@ void do_endp(int *ip);
 void proc_reloc(void);
 
 /* SYMBOL.C */
-int  symhash(void);
-int  colsym(int *ip);
+int symhash(const char *buf);
+int symcasehash(const char *buf);
+int colsym(int *ip);
+int get_identifier(char *target, int *ip);
 struct t_symbol *stlook(int flag);
 struct t_symbol *stinstall(int hash, int type);
 int  labldef(int lval, int flag);

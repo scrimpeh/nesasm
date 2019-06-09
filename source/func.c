@@ -39,7 +39,7 @@ int func_look(void)
 	int hash;
 
 	/* search the function in the hash table */
-	hash = symhash();
+	hash = symhash(symbol);
 	func_ptr = func_tbl[hash];
 	while (func_ptr) {
 		if (!strcmp(&symbol[1], func_ptr->name))
@@ -90,7 +90,7 @@ int func_install(int ip)
 	/* initialize it */
 	strcpy(func_ptr->name, &symbol[1]);
 	strcpy(func_ptr->line, func_line);
-	hash = symhash();
+	hash = symhash(symbol);
 	func_ptr->next = func_tbl[hash];
 	func_tbl[hash] = func_ptr;
 
